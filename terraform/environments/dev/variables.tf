@@ -1,14 +1,24 @@
+# General
+variable "aws_region" {
+  description = "AWS region to deploy resources"
+  type        = string
+  default     = "af-south-1"
+}
+
 variable "project_name" {
   description = "Name of the project, used for resource naming"
   type        = string
+  default     = "terraform-project"
 }
 
-variable "environment" {
-  description = "Deployment environment (dev, staging, prod)"
+# VPC configuration
+variable "vpc_cidr" {
+  description = "CIDR block for the VPC if a new one needs to be created"
   type        = string
-  default     = "dev"
+  default     = "172.31.0.0/16"
 }
 
+# Database configuration
 variable "db_identifier" {
   description = "Identifier for the RDS instance"
   type        = string
@@ -49,30 +59,14 @@ variable "allocated_storage" {
   default     = 20
 }
 
-variable "multi_az" {
+variable "db_multi_az" {
   description = "Whether to enable Multi-AZ deployment"
   type        = bool
   default     = false
 }
 
-variable "skip_final_snapshot" {
+variable "db_skip_final_snapshot" {
   description = "Whether to skip the final snapshot when destroying the instance"
   type        = bool
   default     = true
-}
-
-variable "availability_zone" {
-  description = "AZ to place the instance in, or null to let AWS choose"
-  type        = string
-  default     = null
-}
-
-variable "subnet_ids" {
-  description = "List of subnet IDs to place the DB instance in"
-  type        = list(string)
-}
-
-variable "db_security_group_id" {
-  description = "ID of the security group for the DB instance"
-  type        = string
 }
