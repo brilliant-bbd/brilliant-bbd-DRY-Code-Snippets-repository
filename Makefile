@@ -1,47 +1,74 @@
-# Define variables
-TF_VARS_EXAMPLE_PATH=terraform/environments/dev/terraform.tfvars.example
-TF_VARS_PATH=terraform/environments/dev/terraform.tfvars
-SCRIPT_PATH=scripts/run-migrations.sh
+# Terraform Workflow Makefile with Safe Destroy Commands
 
-# 1. Create folder structure
-create-folders:
-	mkdir -p terraform/modules/{networking,database}
-	mkdir -p terraform/environments/dev
-	mkdir -p flyway/{sql,conf}
-	mkdir -p scripts
-	mkdir -p .github/workflows
+# Variables
+BACKEND_DIR = terraform/global/s3-backend
+ENV_DIR = terraform/environments/dev
+BACKEND_CONFIG = backend.tfvars
+VAR_FILE = terraform.tfvars
 
-# 2. Copy files to respective locations
-copy-files:
-	# Add your copy commands here if any, for now, it's just a placeholder
-	@echo "Files copied to respective locations (implement as needed)."
+.PHONY: init-backend apply-backend init-env plan-env apply-env all destroy-env destroy-backend destroy-all safe-destroy-backend
 
-# 3. Make scripts executable
-make-scripts-executable:
-	chmod +x $(SCRIPT_PATH)
+# Initialize and apply S3 backend
+init-backend:
+	cd $(BACKEND_DIR) && terraform init
 
-# 4. Create terraform.tfvars from the example
-create-terraform-vars:
-	cp terraform/environments/dev/terraform.tfvars.example terraform/environments/dev/terraform.tfvars
-	@echo "Please edit $(TF_VARS_PATH) with your preferred values."
+apply-backend:
+	cd $(BACKEND_DIR) && terraform apply
 
+# Initialize, plan and apply environment
+init-env:
+	cd $(ENV_DIR) && terraform init -backend-config=$(BACKEND_CONFIG)
 
-# 5. Initialize Terraform
-terraform-init:
-	cd terraform/environments/dev && terraform init
+plan-env:
+	cd $(ENV_DIR) && terraform plan -var-file=$(VAR_FILE)
 
-# 6. Run Terraform plan to verify configuration
-terraform-plan:
-	cd terraform/environments/dev && terraform plan
+apply-env:
+	cd $(ENV_DIR) && terraform apply -var-file=$(VAR_FILE)
 
-# 7. Apply the Terraform configuration
-terraform-apply:
-	cd terraform/environments/dev && terraform apply
+# Run the complete workflow
+all: init-backend apply-backend init-env plan-env apply-env
 
-# 8. Run database migrations
-run-migrations:
-	bash "$(SCRIPT_PATH)"
+# Just initialize everything
+init-all: init-backend init-env
 
-# Combined target for running everything
-all: create-folders copy-files make-scripts-executable create-terraform-vars terraform-init terraform-plan terraform-apply run-migrations
-	@echo "All steps completed successfully."
+# Plan and apply everything (assumes already initialized)
+deploy-all: apply-backend plan-env apply-env
+
+# Destroy commands
+destroy-env:
+	cd $(ENV_DIR) && terraform destroy -var-file=$(VAR_FILE)
+
+# Regular destroy backend (will fail with prevent_destroy=true)
+destroy-backend:
+	cd $(BACKEND_DIR) && terraform destroy
+
+# Safe destroy backend - destroys everything EXCEPT the S3 bucket
+safe-destroy-backend:
+	cd $(BACKEND_DIR) && terraform destroy -target=aws_dynamodb_table.terraform_locks \
+	-target=aws_s3_bucket_versioning.terraform_state_versioning \
+	-target=aws_s3_bucket_server_side_encryption_configuration.terraform_state_encryption \
+	-target=aws_s3_bucket_public_access_block.terraform_state_public_access
+
+# Destroy everything (environment first, then backend)
+destroy-all: destroy-env safe-destroy-backend
+	@echo "\n==================================================================="
+	@echo "NOTICE: The S3 state bucket was NOT destroyed due to prevent_destroy"
+	@echo "If you really want to destroy it, you must:"
+	@echo "1. Change prevent_destroy = true to false in the bucket resource"
+	@echo "2. Run: cd $(BACKEND_DIR) && terraform apply"
+	@echo "3. Run: cd $(BACKEND_DIR) && terraform destroy"
+	@echo "==================================================================="
+
+# Confirm and destroy everything (with prompts for confirmation)
+destroy-with-confirm:
+	@echo "Are you sure you want to destroy the environment? [y/N]" && read ans && [ $${ans:-N} = y ]
+	@$(MAKE) destroy-env
+	@echo "Are you sure you want to destroy backend resources (except the protected S3 bucket)? [y/N]" && read ans && [ $${ans:-N} = y ]
+	@$(MAKE) safe-destroy-backend
+	@echo "\n==================================================================="
+	@echo "NOTICE: The S3 state bucket was NOT destroyed due to prevent_destroy"
+	@echo "If you really want to destroy it, you must:"
+	@echo "1. Change prevent_destroy = true to false in the bucket resource"
+	@echo "2. Run: cd $(BACKEND_DIR) && terraform apply"
+	@echo "3. Run: cd $(BACKEND_DIR) && terraform destroy"
+	@echo "==================================================================="
