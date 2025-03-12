@@ -70,3 +70,40 @@ variable "db_skip_final_snapshot" {
   type        = bool
   default     = true
 }
+
+variable "environment" {
+  description = "Environment name (dev, test, prod)"
+  type        = string
+  default     = "dev"
+}
+
+variable "eb_solution_stack_name" {
+  description = "Elastic Beanstalk solution stack name"
+  type        = string
+  # Example default value:
+  # default     = "64bit Amazon Linux 2023 v4.0.1 running Python 3.9"
+}
+
+variable "eb_instance_type" {
+  description = "EC2 instance type for Elastic Beanstalk environment"
+  type        = string
+  default     = "t3.micro"
+}
+
+variable "eb_min_instances" {
+  description = "Minimum number of instances for Elastic Beanstalk auto scaling"
+  type        = number
+  default     = 1
+}
+
+variable "eb_max_instances" {
+  description = "Maximum number of instances for Elastic Beanstalk auto scaling"
+  type        = number
+  default     = 2
+}
+
+variable "db_availability_zone" {
+  description = "The AZ where the RDS instance will be created"
+  type        = string
+  default     = null  # Let AWS choose 
+}
