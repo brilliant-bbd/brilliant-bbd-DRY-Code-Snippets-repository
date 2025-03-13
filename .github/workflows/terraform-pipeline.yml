@@ -46,7 +46,26 @@ jobs:
     - name: Check if backend exists
       id: check_backend
       run: |
-        aws s3api head-bucket --bucket ${{ secrets.TERRAFORM_STATE_BUCKET }} 2>/prod/null || echo "create_backend=true" >> $GITHUB_OUTPUT
+        # Check if S3 bucket exists
+        if aws s3api head-bucket --bucket ${{ secrets.TERRAFORM_STATE_BUCKET }} 2>/dev/null; then
+          echo "s3_bucket_exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "s3_bucket_exists=false" >> $GITHUB_OUTPUT
+        fi
+        
+        # Check if DynamoDB table exists
+        if aws dynamodb describe-table --table-name ${{ secrets.TERRAFORM_LOCK_TABLE }} 2>/dev/null; then
+          echo "dynamodb_table_exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "dynamodb_table_exists=false" >> $GITHUB_OUTPUT
+        fi
+        
+        # Set create_backend flag only if BOTH resources don't exist
+        if [[ "$s3_bucket_exists" == "false" && "$dynamodb_table_exists" == "false" ]]; then
+          echo "create_backend=true" >> $GITHUB_OUTPUT
+        else
+          echo "create_backend=false" >> $GITHUB_OUTPUT
+        fi
 
     # Initialize and apply the backend configuration only if needed
     - name: Terraform Backend Init
