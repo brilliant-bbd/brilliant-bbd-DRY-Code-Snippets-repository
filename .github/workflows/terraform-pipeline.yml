@@ -91,7 +91,7 @@ jobs:
         db_instance_class = "${{ vars.DB_INSTANCE_CLASS }}"
         db_engine_version = "${{ vars.DB_ENGINE_VERSION }}"
         allocated_storage = ${{ vars.ALLOCATED_STORAGE }}
-        db_multi_az    = true
+        db_multi_az    = false
         db_skip_final_snapshot = true
         required_subnet_count = 2
         eb_solution_stack_name = "${{ vars.EB_SOLUTION_STACK }}"
