@@ -5,6 +5,9 @@ import com.dry_code_snippets.util.Cli;
 
 import java.util.Scanner;
 
+import static com.dry_code_snippets.util.OutputHelper.changeTextGreen;
+import static com.dry_code_snippets.util.OutputHelper.changeTextWhite;
+
 public class Main {
     public static void main(String[] args) {
 
@@ -12,8 +15,11 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("Google CLI - Type '-help' for help and '-exit' to quit.");
+        changeTextGreen();
+        System.out.print(" > ");
 
         while (scanner.hasNextLine()) {
+
             String input = scanner.nextLine().trim();
 
             if ("-exit".equalsIgnoreCase(input)) {
@@ -22,10 +28,12 @@ public class Main {
             }
 
             if (!input.isEmpty()) {
-                System.out.println();
+                changeTextWhite();
                 cli.execute(input.split("\\s+"));
-                System.out.println();
             }
+
+            changeTextGreen();
+            System.out.print("\r > ");
         }
 
         scanner.close();

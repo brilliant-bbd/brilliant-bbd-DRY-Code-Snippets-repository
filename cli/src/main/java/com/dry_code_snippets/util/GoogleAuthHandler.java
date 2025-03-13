@@ -12,6 +12,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.dry_code_snippets.util.OutputHelper.cliPrint;
+
 public class GoogleAuthHandler {
     ;
     private static String CLIENT_ID;
@@ -55,7 +57,7 @@ public class GoogleAuthHandler {
                 }
                 exchange.sendResponseHeaders(200, output.length());
                 exchange.getResponseBody().write(output.getBytes());
-                System.out.println(output);
+                cliPrint(output);
                 callbackServer.stop(0);
 
             } catch (Exception e) {

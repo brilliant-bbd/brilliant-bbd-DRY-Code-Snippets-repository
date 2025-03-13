@@ -9,6 +9,7 @@ import java.util.Scanner;
 
 import static com.dry_code_snippets.util.InputHelper.multiLineInput;
 import static com.dry_code_snippets.util.InputHelper.singleLineInput;
+import static com.dry_code_snippets.util.OutputHelper.cliPrint;
 
 @Command(name = "add-snippet", description = "Adds a new code snippet")
 public class AddSnippet implements Runnable {
@@ -36,9 +37,9 @@ public class AddSnippet implements Runnable {
         json.put("coding_language", codingLanguage);
         json.put("code", code);
 
-        System.out.println(json);
+//        System.out.println(json);
         String response = RequestHandler.postRequest("/api/data", "", json.toString());
-        System.out.println("POST Response: " + response);
+        cliPrint("POST Response: " + response);
 
     }
 }
