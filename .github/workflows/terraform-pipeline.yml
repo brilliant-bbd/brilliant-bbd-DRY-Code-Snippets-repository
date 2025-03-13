@@ -16,7 +16,7 @@ jobs:
     name: 'Terraform'
     runs-on: ubuntu-latest
     environment: 
-      name: dev
+      name: prod
     
     # Use the Bash shell regardless of the OS runner
     defaults:
@@ -45,7 +45,7 @@ jobs:
     - name: Check if backend exists
       id: check_backend
       run: |
-        aws s3api head-bucket --bucket ${{ secrets.TERRAFORM_STATE_BUCKET }} 2>/dev/null || echo "create_backend=true" >> $GITHUB_OUTPUT
+        aws s3api head-bucket --bucket ${{ secrets.TERRAFORM_STATE_BUCKET }} 2>/prod/null || echo "create_backend=true" >> $GITHUB_OUTPUT
 
     # Initialize and apply the backend configuration only if needed
     - name: Terraform Backend Init
@@ -64,14 +64,14 @@ jobs:
     # Set environment
     - name: Set environment variables
       run: |
-        echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+        echo "ENVIRONMENT=prod" >> $GITHUB_ENV
 
     # Set up backend configuration
     - name: Create backend tfvars file
       run: |
         cat > terraform/environments/prod/backend.tfvars << EOF
         bucket         = "${{ secrets.TERRAFORM_STATE_BUCKET }}"
-        key            = "dev/terraform.tfstate"
+        key            = "prod/terraform.tfstate"
         region         = "af-south-1"
         dynamodb_table = "${{ secrets.TERRAFORM_LOCK_TABLE }}"
         encrypt        = true
@@ -80,7 +80,7 @@ jobs:
     # Set up terraform variables
     - name: Create terraform tfvars file
       run: |
-        cat > terraform/environments/dev/terraform.tfvars << EOF
+        cat > terraform/environments/prod/terraform.tfvars << EOF
         aws_region     = "af-south-1"
         project_name   = "${{ vars.PROJECT_NAME }}"
         vpc_cidr       = "${{ vars.VPC_CIDR }}"
@@ -98,7 +98,7 @@ jobs:
         eb_instance_type       = "t3.micro"
         eb_min_instances       = 1
         eb_max_instances       = 2
-        environment            = "dev"
+        environment            = "prod"
         EOF
         
     # Initialize Terraform working directory
