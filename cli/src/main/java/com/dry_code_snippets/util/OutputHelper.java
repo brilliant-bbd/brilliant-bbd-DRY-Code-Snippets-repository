@@ -3,7 +3,7 @@ package com.dry_code_snippets.util;
 public class OutputHelper {
 
     public static void cliPrint(String text) {
-        changeTextWhite();
+        changeTextYellow();
         System.out.println("\r" + text);
         changeTextGreen();
         System.out.print("\r > ");
@@ -22,6 +22,10 @@ public class OutputHelper {
 
     public static void changeTextWhite() {
         System.out.print("\u001B[0m");
+    }
+
+    public static void changeTextYellow() {
+        System.out.print("\u001B[33m");
     }
 
     public static void changeTextRed() {

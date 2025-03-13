@@ -5,8 +5,7 @@ import com.dry_code_snippets.util.Cli;
 
 import java.util.Scanner;
 
-import static com.dry_code_snippets.util.OutputHelper.changeTextGreen;
-import static com.dry_code_snippets.util.OutputHelper.changeTextWhite;
+import static com.dry_code_snippets.util.OutputHelper.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -14,7 +13,9 @@ public class Main {
         CommandLine cli = new CommandLine(new Cli());
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Google CLI - Type '-help' for help and '-exit' to quit.");
+        changeTextYellow();
+        System.out.println("╔═══╦═══╦╗──╔╗\n╚╗╔╗║╔═╗║╚╗╔╝║\n─║║║║╚═╝╠╗╚╝╔╝\n─║║║║╔╗╔╝╚╗╔╝\n╔╝╚╝║║║╚╗─║║\n╚═══╩╝╚═╝─╚╝");
+        System.out.println("Code Snippets CLI - Type '-help' for help and '-exit' to quit.");
         changeTextGreen();
         System.out.print(" > ");
 
@@ -28,7 +29,7 @@ public class Main {
             }
 
             if (!input.isEmpty()) {
-                changeTextWhite();
+                changeTextYellow();
                 cli.execute(input.split("\\s+"));
             }
 
