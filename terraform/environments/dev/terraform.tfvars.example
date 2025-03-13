@@ -1,0 +1,16 @@
+aws_region     = ""
+project_name   = "dry-code-snippets"
+
+# VPC settings (if creating a new VPC)
+vpc_cidr       = "172.31.0.0/16"
+
+# Database settings
+db_identifier  = ""
+db_name        = ""
+db_username    = ""
+db_password    = ""  
+db_instance_class = ""
+db_engine_version = ""
+allocated_storage = 
+db_multi_az    = 
+db_skip_final_snapshot = 
