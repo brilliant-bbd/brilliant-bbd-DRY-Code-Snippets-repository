@@ -10,7 +10,7 @@ VAR_FILE = terraform.tfvars
 
 # Initialize and apply S3 backend
 init-backend:
-	cd $(BACKEND_DIR) && terraform init
+	cd $(BACKEND_DIR) && terraform init  -var-file=terraform.tfvars -lock=false
 
 apply-backend:
 	cd $(BACKEND_DIR) && terraform apply
