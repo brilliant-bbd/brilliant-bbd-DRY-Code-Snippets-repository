@@ -6,8 +6,8 @@ provider "aws" {
 # Configure the S3 backend
 terraform {
   backend "s3" {
-     bucket         = "dry-code-snippets-bucket"
-     key            = "terraform.tfstate"
+     bucket         = "your-terraform-state-bucket-name"
+     key            = "dev/terraform.tfstate"
      region         = "af-south-1"
      dynamodb_table = "terraform-state-locks"
      encrypt        = true
