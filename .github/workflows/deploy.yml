@@ -1,0 +1,93 @@
+name: Terraform CI/CD
+
+on:
+  push:
+    branches: [main, peo/new-terra]
+    paths:
+      - 'terraform/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'terraform/**'
+  workflow_dispatch:  
+
+env:
+  TF_VERSION: 1.5.7
+  AWS_REGION: af-south-1
+  ENVIRONMENT: prod
+
+jobs:
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+    
+    # Add permissions needed for OIDC authentication to AWS
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.11.2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Create backend configuration
+        run: |
+          cat > backend.hcl << EOF
+          bucket         = "dry-code-snippets-bucket"
+          key            = "$prod/terraform.tfstate"
+          region         = "af-south-1"
+          dynamodb_table = "terraform-state-locks"
+          encrypt        = true
+          EOF
+
+      - name: Terraform Init
+        working-directory: terraform/environments/${{ env.ENVIRONMENT }}
+        run: terraform init -backend-config=../../../backend.hcl
+
+      - name: Terraform Format Check
+        working-directory: terraform/environments/${{ env.ENVIRONMENT }}
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Validate
+        working-directory: terraform/environments/${{ env.ENVIRONMENT }}
+        run: terraform validate
+
+      - name: Terraform Plan
+        id: plan
+        working-directory: terraform/environments/${{ env.ENVIRONMENT }}
+        run: |
+          export TF_VAR_db_username=${{ secrets.DB_USERNAME }}
+          export TF_VAR_db_password=${{ secrets.DB_PASSWORD }}
+          export TF_VAR_db_identifier=${{ vars.DB_IDENTIFIER }}
+          export TF_VAR_db_name=${{ vars.DB_NAME }}
+          export TF_VAR_eb_solution_stack_name=${{ vars.EB_SOLUTION_STACK_NAME }}
+          
+          terraform plan -no-color -input=false -out=tfplan
+        continue-on-error: true
+
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+      - name: Terraform Apply
+        working-directory: terraform/environments/prod
+        run: |
+          export TF_VAR_db_username=${{ secrets.DB_USERNAME }}
+          export TF_VAR_db_password=${{ secrets.DB_PASSWORD }}
+          export TF_VAR_db_identifier=${{ vars.DB_IDENTIFIER }}
+          export TF_VAR_db_name=${{ vars.DB_NAME }}
+          export TF_VAR_eb_solution_stack_name=${{ vars.EB_SOLUTION_STACK_NAME }}
+          
+          terraform apply -auto-approve tfplan
