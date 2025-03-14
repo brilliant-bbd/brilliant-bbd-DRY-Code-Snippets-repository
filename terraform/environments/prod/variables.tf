@@ -8,7 +8,7 @@ variable "aws_region" {
 variable "project_name" {
   description = "Name of the project, used for resource naming"
   type        = string
-  default     = "terraform-project"
+  default     = "dry-code-snippets-tfoject"
 }
 
 # VPC configuration
@@ -50,7 +50,7 @@ variable "db_instance_class" {
 variable "db_engine_version" {
   description = "Version of PostgreSQL to use"
   type        = string
-  default     = "14.7"
+  default     = "17.3"
 }
 
 variable "allocated_storage" {
@@ -74,7 +74,7 @@ variable "db_skip_final_snapshot" {
 variable "environment" {
   description = "Environment name (dev, test, prod)"
   type        = string
-  default     = "dev"
+  default     = "prod"
 }
 
 variable "eb_solution_stack_name" {
@@ -103,11 +103,11 @@ variable "eb_max_instances" {
 variable "db_availability_zone" {
   description = "The AZ where the RDS instance will be created"
   type        = string
-  default     = null  # Let AWS choose 
+  default     = null # Let AWS choose 
 }
 
 variable "required_subnet_count" {
   description = "The AZ where the RDS instance will be created"
   type        = number
-  default     = 2  
+  default     = 2
 }
