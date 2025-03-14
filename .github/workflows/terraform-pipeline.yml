@@ -32,36 +32,35 @@ jobs:
  
    
    
-    - name: 🔍 Check if backend exists
-      id: check_backend
-      run: |
-        # Check if S3 bucket exists
-        if aws s3api head-bucket --bucket ${{ secrets.TERRAFORM_STATE_BUCKET }} 2>/dev/null; then
-          echo "s3_bucket_exists=true ✅" >> $GITHUB_OUTPUT
-        else
-          echo "s3_bucket_exists=false ❌" >> $GITHUB_OUTPUT
-        fi
+    # - name: 🔍 Check if backend exists
+    #   id: check_backend
+    #   run: |
+    #     # Check if S3 bucket exists
+    #     if aws s3api head-bucket --bucket ${{ secrets.TERRAFORM_STATE_BUCKET }} 2>/dev/null; then
+    #       echo "s3_bucket_exists=true ✅" >> $GITHUB_OUTPUT
+    #     else
+    #       echo "s3_bucket_exists=false ❌" >> $GITHUB_OUTPUT
+    #     fi
        
-        # Check if DynamoDB table exists
-        if aws dynamodb describe-table --table-name ${{ secrets.TERRAFORM_LOCK_TABLE }} 2>/dev/null; then
-          echo "dynamodb_table_exists=true ✅" >> $GITHUB_OUTPUT
-        else
-          echo "dynamodb_table_exists=false ❌" >> $GITHUB_OUTPUT
-        fi
+    #     # Check if DynamoDB table exists
+    #     if aws dynamodb describe-table --table-name ${{ secrets.TERRAFORM_LOCK_TABLE }} 2>/dev/null; then
+    #       echo "dynamodb_table_exists=true ✅" >> $GITHUB_OUTPUT
+    #     else
+    #       echo "dynamodb_table_exists=false ❌" >> $GITHUB_OUTPUT
+    #     fi
        
-        # Set create_backend flag only if BOTH resources don't exist
-        if [[ $(aws s3api head-bucket --bucket ${{ secrets.TERRAFORM_STATE_BUCKET }} 2>/dev/null; echo $?) -ne 0 ]] || [[ $(aws dynamodb describe-table --table-name ${{ secrets.TERRAFORM_LOCK_TABLE }} 2>/dev/null; echo $?) -ne 0 ]]; then
-          echo "create_backend=true" >> $GITHUB_OUTPUT
-        else
-          echo "create_backend=false" >> $GITHUB_OUTPUT
-        fi
+    #     # Set create_backend flag only if BOTH resources don't exist
+    #     if [[ $(aws s3api head-bucket --bucket ${{ secrets.TERRAFORM_STATE_BUCKET }} 2>/dev/null; echo $?) -ne 0 ]] || [[ $(aws dynamodb describe-table --table-name ${{ secrets.TERRAFORM_LOCK_TABLE }} 2>/dev/null; echo $?) -ne 0 ]]; then
+    #       echo "create_backend=true" >> $GITHUB_OUTPUT
+    #     else
+    #       echo "create_backend=false" >> $GITHUB_OUTPUT
+    #     fi
  
   setup_backend:
     name:  🏗️ Setup Terraform Backend
     needs: check_backend
     runs-on: ubuntu-latest
     environment: prod
-    if: needs.check_backend.outputs.create_backend == 'true'
    
     steps:
     - name: 📥 Checkout Repository
@@ -82,16 +81,14 @@ jobs:
     - name: ⚙️ Terraform Backend Init & Apply (Backend)
       run: |
         cd terraform/global/s3-backend
-        terraform init
-        terraform plan
-        terraform apply -auto-approve
+        terraform init -backend-config="bucket=${{ secrets.AWS_BUCKET_NAME}}" -backend-config="key=${{ secrets.TERRAFORM_LOCK_TABLE}}" -backend-config="region=af-south-1"
  
   terraform_deploy:
     name: 🚀 Terraform Infrastructure Deployment
-    needs: [check_backend, setup_backend]
+    needs: [ setup_backend]
     runs-on: ubuntu-latest
     environment: prod
-    if: always() && (needs.check_backend.result == 'success') && (needs.setup_backend.result == 'success' || needs.check_backend.outputs.create_backend != 'true')
+
     outputs:
       has_changes: ${{ steps.plan.outputs.has_changes }}
       infrastructure_exists: ${{ steps.check_infrastructure.outputs.infrastructure_exists }}
@@ -152,7 +149,7 @@ jobs:
     - name: 🏗️ Terraform Init
       run: |
         cd terraform/environments/prod
-        terraform init -backend-config=backend.tfvars
+        terraform init -backend-config="bucket=${{ secrets.AWS_BUCKET_NAME}}" -backend-config="key=${{ secrets.TERRAFORM_LOCK_TABLE}}" -backend-config="region=af-south-1"
  
     - name: 🔍 Terraform Validate
       run: |
