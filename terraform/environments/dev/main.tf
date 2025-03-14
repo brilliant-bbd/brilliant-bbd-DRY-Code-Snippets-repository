@@ -6,9 +6,8 @@ provider "aws" {
 # Configure the S3 backend
 terraform {
   backend "s3" {
-    # These values must be provided via terraform init command
-     bucket         = "your-terraform-state-bucket-name"
-     key            = "dev/terraform.tfstate"
+     bucket         = "dry-code-snippets-bucket"
+     key            = "terraform.tfstate"
      region         = "af-south-1"
      dynamodb_table = "terraform-state-locks"
      encrypt        = true
