@@ -32,7 +32,7 @@ jobs:
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
       with:
-        terraform_version: 1.0.1
+        terraform_version: 1.5.0  # Updated version
         terraform_wrapper: false
     
     - name: Create backend.tfvars
@@ -69,15 +69,7 @@ jobs:
         EOF
     
     - name: Initialize Backend
-      run: make init-backend
-    
-    - name: Debug backend config
-      run: |
-        echo "Bucket name length: ${#AWS_BUCKET_NAME}"
-        echo "Backend config file:"
-        cat terraform/environments/dev/backend.tfvars
-      env:
-        AWS_BUCKET_NAME: ${{ secrets.TERRAFORM_STATE_BUCKET }}
+      run: terraform init -backend-config=terraform/environments/dev/backend.tfvars
     
     - name: Apply Backend
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
@@ -88,11 +80,11 @@ jobs:
     
     - name: Plan Environment
       run: make plan-env
-      
+     
     - name: Apply Environment
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
       run: make apply-env -auto-approve
-      
+    
     - name: Export Terraform Outputs
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
       id: terraform_outputs
