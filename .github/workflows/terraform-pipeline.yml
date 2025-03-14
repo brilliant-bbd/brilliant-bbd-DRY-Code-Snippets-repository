@@ -1,92 +1,121 @@
-name: Terraform Deployment
-
+name: 🚀 Infrastructure Deployment
+ 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, peo/terrafrom-setup]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
-
+ 
 permissions:
   id-token: write
   contents: read
-
+ 
 jobs:
-  terraform:
-    name: 'Terraform'
+  check_backend:
+    name: 🔍 Check Terraform Backend
     runs-on: ubuntu-latest
-    environment: 
-      name: prod
-    
-    # Use the Bash shell regardless of the OS runner
-    defaults:
-      run:
-        shell: bash
-
+    environment: prod
+    outputs:
+      create_backend: ${{ steps.check_backend.outputs.create_backend }}
+   
     steps:
-    # Checkout the repository
-    - name: Checkout
+    - name: 📥 Checkout Repository
       uses: actions/checkout@v4
-
-    # Install Terraform
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: 1.11.2
-
-    # Configure AWS credentials
-    - name: Configure AWS credentials
+ 
+    - name: 🔐 Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: af-south-1
-
-    # Check if backend exists before trying to create it
-    - name: Check if backend exists
+ 
+   
+   
+    - name: 🔍 Check if backend exists
       id: check_backend
       run: |
         # Check if S3 bucket exists
         if aws s3api head-bucket --bucket ${{ secrets.TERRAFORM_STATE_BUCKET }} 2>/dev/null; then
-          echo "s3_bucket_exists=true" >> $GITHUB_OUTPUT
+          echo "s3_bucket_exists=true ✅" >> $GITHUB_OUTPUT
         else
-          echo "s3_bucket_exists=false" >> $GITHUB_OUTPUT
+          echo "s3_bucket_exists=false ❌" >> $GITHUB_OUTPUT
         fi
-        
+       
         # Check if DynamoDB table exists
         if aws dynamodb describe-table --table-name ${{ secrets.TERRAFORM_LOCK_TABLE }} 2>/dev/null; then
-          echo "dynamodb_table_exists=true" >> $GITHUB_OUTPUT
+          echo "dynamodb_table_exists=true ✅" >> $GITHUB_OUTPUT
         else
-          echo "dynamodb_table_exists=false" >> $GITHUB_OUTPUT
+          echo "dynamodb_table_exists=false ❌" >> $GITHUB_OUTPUT
         fi
-        
+       
         # Set create_backend flag only if BOTH resources don't exist
-        if [[ "$s3_bucket_exists" == "false" && "$dynamodb_table_exists" == "false" ]]; then
+        if [[ $(aws s3api head-bucket --bucket ${{ secrets.TERRAFORM_STATE_BUCKET }} 2>/dev/null; echo $?) -ne 0 ]] || [[ $(aws dynamodb describe-table --table-name ${{ secrets.TERRAFORM_LOCK_TABLE }} 2>/dev/null; echo $?) -ne 0 ]]; then
           echo "create_backend=true" >> $GITHUB_OUTPUT
         else
           echo "create_backend=false" >> $GITHUB_OUTPUT
         fi
-
-    # Initialize and apply the backend configuration only if needed
-    - name: Terraform Backend Init
-      if: steps.check_backend.outputs.create_backend == 'true'
+ 
+  setup_backend:
+    name:  🏗️ Setup Terraform Backend
+    needs: check_backend
+    runs-on: ubuntu-latest
+    environment: prod
+    if: needs.check_backend.outputs.create_backend == 'true'
+   
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+ 
+    - name: ⚙️ Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.11.2
+ 
+    - name: 🔐 Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: af-south-1
+ 
+    - name: ⚙️ Terraform Backend Init & Apply (Backend)
       run: |
         cd terraform/global/s3-backend
         terraform init
         terraform plan
-
-    - name: Terraform Backend Apply
-      if: steps.check_backend.outputs.create_backend == 'true'
-      run: |
-        cd terraform/global/s3-backend
         terraform apply -auto-approve
-
-    # Set environment
+ 
+  terraform_deploy:
+    name: 🚀 Terraform Infrastructure Deployment
+    needs: [check_backend, setup_backend]
+    runs-on: ubuntu-latest
+    environment: prod
+    if: always() && (needs.check_backend.result == 'success') && (needs.setup_backend.result == 'success' || needs.check_backend.outputs.create_backend != 'true')
+    outputs:
+      has_changes: ${{ steps.plan.outputs.has_changes }}
+      infrastructure_exists: ${{ steps.check_infrastructure.outputs.infrastructure_exists }}
+   
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+ 
+    - name: ⚙️ Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.11.2
+ 
+    - name: 🔐 Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: af-south-1
+ 
     - name: Set environment variables
       run: |
         echo "ENVIRONMENT=prod" >> $GITHUB_ENV
-
-    # Set up backend configuration
+ 
     - name: Create backend tfvars file
       run: |
         cat > terraform/environments/prod/backend.tfvars << EOF
@@ -96,8 +125,7 @@ jobs:
         dynamodb_table = "${{ secrets.TERRAFORM_LOCK_TABLE }}"
         encrypt        = true
         EOF
-        
-    # Set up terraform variables
+       
     - name: Create terraform tfvars file
       run: |
         cat > terraform/environments/prod/terraform.tfvars << EOF
@@ -120,49 +148,115 @@ jobs:
         eb_max_instances       = 2
         environment            = "prod"
         EOF
-        
-    # Initialize Terraform working directory
-    - name: Terraform Init
+       
+    - name: 🏗️ Terraform Init
       run: |
         cd terraform/environments/prod
         terraform init -backend-config=backend.tfvars
-
-    # Validate Terraform configuration
-    - name: Terraform Validate
+ 
+    - name: 🔍 Terraform Validate
       run: |
         cd terraform/environments/prod
         terraform validate -no-color
-
-    # Plan Terraform changes
-    - name: Terraform Plan
+ 
+    - name: 🔎 Check if Infrastructure Exists
+      id: check_infrastructure
+      run: |
+        cd terraform/environments/prod
+        # More robust check for infrastructure, checking multiple resources
+        if terraform state list | grep -q "module.database\|module.vpc\|module.elastic_beanstalk"; then
+          echo "infrastructure_exists=true" >> $GITHUB_OUTPUT
+          echo "Existing infrastructure detected ✅"
+        else
+          echo "infrastructure_exists=false" >> $GITHUB_OUTPUT
+          echo "No existing infrastructure found ❌"
+        fi
+ 
+    - name: 📝 Terraform Plan
       id: plan
       run: |
         cd terraform/environments/prod
         terraform plan -var-file=terraform.tfvars -no-color -out=tfplan
         terraform show -json tfplan > plan.json
-        echo "has_changes=$(jq -r '.resource_changes | length > 0' plan.json)" >> $GITHUB_OUTPUT
-
-    # Apply Terraform changes
-    - name: Terraform Apply
+       
+        CHANGES=$(jq '.resource_changes | map(select(.change.actions[] | . != "no-op")) | length' plan.json)
+        if [[ $CHANGES -gt 0 ]]; then
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+          echo "Detected $CHANGES resources with changes 🔄"
+        else
+          echo "has_changes=false" >> $GITHUB_OUTPUT
+          echo "No changes detected ✅"
+        fi
+ 
+    - name: ✅ Terraform Apply
       id: apply
       if: steps.plan.outputs.has_changes == 'true'
       run: |
         cd terraform/environments/prod
         terraform apply -var-file=terraform.tfvars -auto-approve
-        
-    # Capture output for reference
-    - name: Capture terraform outputs
-      if: steps.apply.outcome == 'success'
+ 
+    - name: 📦 Capture Terraform Outputs
       run: |
         cd terraform/environments/prod
-        terraform output -json | jq 'del(.db_password, .db_username)' > tf_outputs.json
-        
-    # Post-deployment verification
-    # - name: Verify deployment
-    #   if: steps.apply.outcome == 'success'
-    #   run: |
-    #     echo "Running post-deployment verification checks..."
-    #     # Add verification steps here, e.g.:
-    #     # - Health check endpoints
-    #     # - Resource availability checks
-    #     # - Database connection tests
+        DB_INSTANCE_ENDPOINT=$(terraform output -raw db_instance_endpoint)
+        DB_CONNECTION_STRING=$(terraform output -raw db_connection_string)
+       
+        echo "DB_INSTANCE_ENDPOINT=$DB_INSTANCE_ENDPOINT" >> $GITHUB_ENV
+        echo "DB_CONNECTION_STRING=$DB_CONNECTION_STRING" >> $GITHUB_ENV
+   
+    - name: Debug Terraform Outputs
+      run: |
+        echo "DB_INSTANCE_ENDPOINT=${{ env.DB_INSTANCE_ENDPOINT }}"
+        echo "DB_CONNECTION_STRING=${{ env.DB_CONNECTION_STRING }}"
+ 
+  flyway_migrations:
+    name: 'Flyway Database Migrations'
+    needs: terraform_deploy
+    runs-on: ubuntu-latest
+    environment: prod
+   
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+             
+    - name: 🔐 Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: af-south-1
+ 
+    - name: Install Flyway
+      env:
+          FLYWAY_URL: jdbc:postgresql://${{ env.DB_INSTANCE_ENDPOINT }}/${{ vars.DB_NAME }}
+          FLYWAY_USER: ${{ secrets.DB_USERNAME }}
+          FLYWAY_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      run: |
+        echo "Installing Flyway..."
+        wget -qO- https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/9.20.0/flyway-commandline-9.20.0-linux-x64.tar.gz | tar xvz
+        sudo ln -s $(pwd)/flyway-9.20.0/flyway /usr/local/bin/flyway
+        echo "Flyway installed"
+ 
+    - name: Run Flyway migrations
+      run: |
+        cd flyway
+       
+        # Run flyway commands with additional debugging
+        echo "Running flyway info..."
+        flyway info -X
+       
+        echo "Running flyway migrate..."
+        flyway migrate -X
+       
+        echo "Running final flyway info..."
+        flyway info
+ 
+  deploy:
+    name: Deploy
+    needs: [flyway_migrations, terraform_deploy]
+    runs-on: Ubuntu
+ 
+    steps:
+    - name: Checkout
+      run: |
+        echo "Something
