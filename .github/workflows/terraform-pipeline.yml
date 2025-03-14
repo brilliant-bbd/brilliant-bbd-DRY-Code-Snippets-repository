@@ -38,7 +38,7 @@ jobs:
     - name: Create backend.tfvars
       run: |
         cat > terraform/environments/dev/backend.tfvars << EOF
-        bucket         = "${{ secrets.AWS_BUCKET_NAME }}"
+        bucket         = "${{ secrets.TERRAFORM_STATE_BUCKET }}"
         key            = "dev/terraform.tfstate"
         region         = "af-south-1"
         encrypt        = true
@@ -70,6 +70,14 @@ jobs:
     
     - name: Initialize Backend
       run: make init-backend
+    
+    - name: Debug backend config
+      run: |
+        echo "Bucket name length: ${#AWS_BUCKET_NAME}"
+        echo "Backend config file:"
+        cat terraform/environments/dev/backend.tfvars
+      env:
+        AWS_BUCKET_NAME: ${{ secrets.TERRAFORM_STATE_BUCKET }}
     
     - name: Apply Backend
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
