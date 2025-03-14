@@ -47,7 +47,7 @@ jobs:
     
     - name: Create terraform.tfvars
       run: |
-        cat > terraform/environments/prod/terraform.tfvars << EOF
+        cat > terraform/environments/dev/terraform.tfvars << EOF
         aws_region     = "af-south-1"
         project_name   = "${{ vars.PROJECT_NAME }}"
         vpc_cidr       = "${{ vars.VPC_CIDR }}"
