@@ -1,104 +1,51 @@
-name: Terraform Deployment
+name: Terraform Deploy
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main ]
-  workflow_dispatch:
+    branches: [ main, master ]
+  workflow_dispatch:  # Allow manual triggering
 
-permissions:
-  id-token: write
-  contents: read
+env:
+  AWS_REGION: af-south-1
+  TF_VAR_db_username: ${{ secrets.DB_USERNAME }}
+  TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+  TF_VAR_flyway_username: ${{ secrets.FLYWAY_USERNAME }}
+  TF_VAR_flyway_password: ${{ secrets.FLYWAY_PASSWORD }}
 
 jobs:
   terraform:
-    name: 'Terraform'
     runs-on: ubuntu-latest
-    environment: 
-      name: prod
     
-    # Use the Bash shell regardless of the OS runner
-    defaults:
-      run:
-        shell: bash
-
     steps:
-    # Checkout the repository
-    - name: Checkout
+    - name: Checkout code
       uses: actions/checkout@v4
-
-    # Install Terraform
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: 1.11.2
-
-    # Configure AWS credentials
+    
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: af-south-1
-
-    # Check if backend exists before trying to create it
-    - name: Check if backend exists
-      id: check_backend
+    
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.0.1
+        terraform_wrapper: false
+    
+    - name: Create backend.tfvars
       run: |
-        # Check if S3 bucket exists
-        if aws s3api head-bucket --bucket ${{ secrets.TERRAFORM_STATE_BUCKET }} 2>/dev/null; then
-          echo "s3_bucket_exists=true" >> $GITHUB_OUTPUT
-        else
-          echo "s3_bucket_exists=false" >> $GITHUB_OUTPUT
-        fi
-        
-        # Check if DynamoDB table exists
-        if aws dynamodb describe-table --table-name ${{ secrets.TERRAFORM_LOCK_TABLE }} 2>/dev/null; then
-          echo "dynamodb_table_exists=true" >> $GITHUB_OUTPUT
-        else
-          echo "dynamodb_table_exists=false" >> $GITHUB_OUTPUT
-        fi
-        
-        # Set create_backend flag only if BOTH resources don't exist
-        if [[ "$s3_bucket_exists" == "false" && "$dynamodb_table_exists" == "false" ]]; then
-          echo "create_backend=true" >> $GITHUB_OUTPUT
-        else
-          echo "create_backend=false" >> $GITHUB_OUTPUT
-        fi
-
-    # Initialize and apply the backend configuration only if needed
-    - name: Terraform Backend Init
-      if: steps.check_backend.outputs.create_backend == 'true'
-      run: |
-        cd terraform/global/s3-backend
-        terraform init
-        terraform plan
-
-    - name: Terraform Backend Apply
-      if: steps.check_backend.outputs.create_backend == 'true'
-      run: |
-        cd terraform/global/s3-backend
-        terraform apply -auto-approve
-
-    # Set environment
-    - name: Set environment variables
-      run: |
-        echo "ENVIRONMENT=prod" >> $GITHUB_ENV
-
-    # Set up backend configuration
-    - name: Create backend tfvars file
-      run: |
-        cat > terraform/environments/prod/backend.tfvars << EOF
-        bucket         = "${{ secrets.TERRAFORM_STATE_BUCKET }}"
+        cat > terraform/environments/dev/backend.tfvars << EOF
+        bucket         = "${{ secrets.AWS_BUCKET_NAME }}"
         key            = "dev/terraform.tfstate"
         region         = "af-south-1"
-        dynamodb_table = "${{ secrets.TERRAFORM_LOCK_TABLE }}"
         encrypt        = true
+        dynamodb_table = "terraform-locks"
         EOF
-        
-    # Set up terraform variables
-    - name: Create terraform tfvars file
+    
+    - name: Create terraform.tfvars
       run: |
         cat > terraform/environments/prod/terraform.tfvars << EOF
         aws_region     = "af-south-1"
@@ -118,51 +65,62 @@ jobs:
         eb_instance_type       = "t3.micro"
         eb_min_instances       = 1
         eb_max_instances       = 2
-        environment            = "prod"
+        environment            = "dev"
         EOF
+    
+    - name: Initialize Backend
+      run: make init-backend
+    
+    - name: Apply Backend
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      run: make apply-backend -auto-approve
+    
+    - name: Initialize Environment
+      run: make init-env
+    
+    - name: Plan Environment
+      run: make plan-env
+      
+    - name: Apply Environment
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      run: make apply-env -auto-approve
+      
+    - name: Export Terraform Outputs
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      id: terraform_outputs
+      run: |
+        cd terraform/environments/dev
+        echo "db_host=$(terraform output -raw db_host)" >> $GITHUB_OUTPUT
+    
+  flyway:
+    needs: terraform
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Debug DB Host
+      run: |
+        echo "Using database host: ${{ needs.terraform.outputs.db_host }}"
+    
+    - name: Run Flyway Migration with Docker
+      working-directory: ./flyway
+      run: |
+        # Create a volume to mount migration scripts
+        mkdir -p migration
         
-    # Initialize Terraform working directory
-    - name: Terraform Init
-      run: |
-        cd terraform/environments/prod
-        terraform init -backend-config=backend.tfvars
-
-    # Validate Terraform configuration
-    - name: Terraform Validate
-      run: |
-        cd terraform/environments/prod
-        terraform validate -no-color
-
-    # Plan Terraform changes
-    - name: Terraform Plan
-      id: plan
-      run: |
-        cd terraform/environments/prod
-        terraform plan -var-file=terraform.tfvars -no-color -out=tfplan
-        terraform show -json tfplan > plan.json
-        echo "has_changes=$(jq -r '.resource_changes | length > 0' plan.json)" >> $GITHUB_OUTPUT
-
-    # Apply Terraform changes
-    - name: Terraform Apply
-      id: apply
-      if: steps.plan.outputs.has_changes == 'true'
-      run: |
-        cd terraform/environments/prod
-        terraform apply -var-file=terraform.tfvars -auto-approve
+        # Copy migration scripts from the repository
+        cp -r ./sql/* migration/
         
-    # Capture output for reference
-    - name: Capture terraform outputs
-      if: steps.apply.outcome == 'success'
-      run: |
-        cd terraform/environments/prod
-        terraform output -json | jq 'del(.db_password, .db_username)' > tf_outputs.json
-        
-    # Post-deployment verification
-    # - name: Verify deployment
-    #   if: steps.apply.outcome == 'success'
-    #   run: |
-    #     echo "Running post-deployment verification checks..."
-    #     # Add verification steps here, e.g.:
-    #     # - Health check endpoints
-    #     # - Resource availability checks
-    #     # - Database connection tests
+        docker run --rm \
+          -v ${{ github.workspace }}/migration:/flyway/sql \
+          flyway/flyway:10 \
+          -url=jdbc:postgresql://${{ needs.terraform.outputs.db_host }}:5432/snippets \
+          -user=${{ secrets.FLYWAY_USERNAME }} \
+          -password=${{ secrets.FLYWAY_PASSWORD }} \
+          migrate
