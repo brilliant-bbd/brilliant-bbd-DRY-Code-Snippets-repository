@@ -7,11 +7,11 @@ provider "aws" {
 terraform {
   backend "s3" {
     # These values must be provided via terraform init command
-    # bucket         = "your-terraform-state-bucket-name"
-    # key            = "dev/terraform.tfstate"
-    # region         = "af-south-1"
-    # dynamodb_table = "terraform-state-locks"
-    # encrypt        = true
+     bucket         = "your-terraform-state-bucket-name"
+     key            = "dev/terraform.tfstate"
+     region         = "af-south-1"
+     dynamodb_table = "terraform-state-locks"
+     encrypt        = true
   }
 }
 

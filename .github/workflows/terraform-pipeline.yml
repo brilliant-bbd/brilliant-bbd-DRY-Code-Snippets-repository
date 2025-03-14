@@ -81,7 +81,7 @@ jobs:
     - name: ⚙️ Terraform Backend Init & Apply (Backend)
       run: |
         cd terraform/global/s3-backend
-        terraform init -backend-config="bucket=${{ secrets.AWS_BUCKET_NAME}}" -backend-config="key=$terraform.tfstate" -backend-config="region=af-south-1"
+        terraform init -backend-config="bucket=${{ secrets.AWS_BUCKET_NAME}}" -backend-config="key=terraform.tfstate" -backend-config="region=af-south-1"
  
   terraform_deploy:
     name: 🚀 Terraform Infrastructure Deployment
