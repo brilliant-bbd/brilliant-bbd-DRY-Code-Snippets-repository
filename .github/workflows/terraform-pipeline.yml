@@ -162,6 +162,7 @@ jobs:
           restore-keys: maven-
 
       - name: Run Tests
+        working-directory: ./api
         run: mvn clean test
 
   build-jar:
@@ -187,9 +188,11 @@ jobs:
           restore-keys: maven-
 
       - name: Build with Maven
+        working-directory: ./api
         run: mvn clean package -DskipTests
 
       - name: Prepare Deployment Package
+        working-directory: ./api
         run: |
           mkdir -p deploy
           cp target/*.jar deploy/application.jar
