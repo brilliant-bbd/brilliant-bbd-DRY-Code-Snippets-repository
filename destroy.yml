@@ -1,0 +1,76 @@
+name: Terraform Destroy
+
+on:
+  push:
+    branches: [main, peo/new-terra]
+
+env:
+  TF_VERSION: 1.5.7
+  AWS_REGION: af-south-1
+  ENVIRONMENT: prod
+
+jobs:
+  terraform-destroy:
+    name: Terraform Destroy
+    runs-on: ubuntu-latest
+    
+    permissions:
+      id-token: write
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.11.2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: af-south-1
+
+      - name: Create backend configuration
+        run: |
+          cat > backend.hcl << EOF
+          bucket         = "dry-code-snippets-bucket"
+          key            = "${ENVIRONMENT}/terraform.tfstate"
+          region         = "af-south-1"
+          use_lockfile   = true
+          encrypt        = true
+          EOF
+
+      - name: Terraform Init
+        working-directory: terraform/environments/${{ env.ENVIRONMENT }}
+        run: terraform init -backend-config=../../../backend.hcl
+
+      - name: Terraform Destroy Plan
+        id: destroy-plan
+        working-directory: terraform/environments/${{ env.ENVIRONMENT }}
+        run: |
+          export TF_VAR_db_username="${{ secrets.DB_USERNAME }}"
+          export TF_VAR_db_password="${{ secrets.DB_PASSWORD }}"
+          export TF_VAR_db_identifier="${{ vars.DB_IDENTIFIER }}"
+          export TF_VAR_db_name="${{ vars.DB_NAME }}"
+          export TF_VAR_eb_solution_stack_name="${{ vars.EB_SOLUTION_STACK_NAME }}"
+          
+          terraform plan -destroy -no-color -input=false -out=destroy.tfplan
+
+      - name: Terraform Destroy
+        working-directory: terraform/environments/${{ env.ENVIRONMENT }}
+        run: |
+          export TF_VAR_db_username="${{ secrets.DB_USERNAME }}"
+          export TF_VAR_db_password="${{ secrets.DB_PASSWORD }}"
+          export TF_VAR_db_identifier="${{ vars.DB_IDENTIFIER }}"
+          export TF_VAR_db_name="${{ vars.DB_NAME }}"
+          export TF_VAR_eb_solution_stack_name="${{ vars.EB_SOLUTION_STACK_NAME }}"
+          
+          echo "⚠️ DESTROYING PRODUCTION INFRASTRUCTURE ⚠️"
+          echo "Starting destruction in 10 seconds..."
+          sleep 10
+          
+          terraform apply -auto-approve destroy.tfplan

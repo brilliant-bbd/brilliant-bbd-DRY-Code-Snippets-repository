@@ -1,4 +1,3 @@
-# Provider configuration
 provider "aws" {
   region = var.aws_region
 }
@@ -6,12 +5,11 @@ provider "aws" {
 # Configure the S3 backend
 terraform {
   backend "s3" {
-    # These values must be provided via terraform init command
-    # bucket         = "your-terraform-state-bucket-name"
-    # key            = "dev/terraform.tfstate"
-    # region         = "af-south-1"
-    # dynamodb_table = "terraform-state-locks"
-    # encrypt        = true
+    bucket       = "dry-code-snippets-bucket"
+    key          = "prod/terraform.tfstate"
+    region       = "af-south-1"
+    use_lockfile = "terraform-state-locks"
+    encrypt      = true
   }
 }
 
@@ -21,7 +19,7 @@ module "networking" {
 
   project_name          = var.project_name
   vpc_cidr              = var.vpc_cidr
-  required_subnet_count = 2 # For RDS
+  required_subnet_count = var.required_subnet_count
 }
 
 # Database module

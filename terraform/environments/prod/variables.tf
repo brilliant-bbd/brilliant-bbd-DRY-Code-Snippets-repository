@@ -50,7 +50,7 @@ variable "db_instance_class" {
 variable "db_engine_version" {
   description = "Version of PostgreSQL to use"
   type        = string
-  default     = "14.7"
+  default     = "17.3"
 }
 
 variable "allocated_storage" {
@@ -80,8 +80,6 @@ variable "environment" {
 variable "eb_solution_stack_name" {
   description = "Elastic Beanstalk solution stack name"
   type        = string
-  # Example default value:
-  # default     = "64bit Amazon Linux 2023 v4.0.1 running Python 3.9"
 }
 
 variable "eb_instance_type" {
@@ -106,4 +104,10 @@ variable "db_availability_zone" {
   description = "The AZ where the RDS instance will be created"
   type        = string
   default     = null # Let AWS choose 
+}
+
+variable "required_subnet_count" {
+  description = "The AZ where the RDS instance will be created"
+  type        = number
+  default     = 2
 }

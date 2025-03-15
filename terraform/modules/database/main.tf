@@ -22,12 +22,12 @@ resource "aws_db_instance" "postgres" {
   password               = var.db_password
   instance_class         = var.db_instance_class
   allocated_storage      = var.allocated_storage
-  db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name 
+  db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
   vpc_security_group_ids = [var.db_security_group_id]
   availability_zone      = var.availability_zone
   skip_final_snapshot    = var.skip_final_snapshot
   publicly_accessible    = true
-  
+
   tags = {
     Name        = "${var.project_name}-postgres"
     Environment = var.environment
