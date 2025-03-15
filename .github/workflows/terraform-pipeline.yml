@@ -66,23 +66,23 @@ jobs:
         run: mvn clean package -DskipTests
 
       - name: Prepare Deployment Package
-  working-directory: ./api
-  run: |
-    mkdir -p deploy
-    cp target/*.jar deploy/application.jar
-    
-    # Create Procfile with JVM options inline
-    echo "web: java -Xms256m -Xmx512m -Dspring.profiles.active=prod -Dserver.port=5000 -Dlogging.file.path=/var/log/ -jar application.jar" > deploy/Procfile
-    
-    # Package everything up
-    cd deploy
-    zip -r application.zip application.jar Procfile
+        working-directory: ./api
+        run: |
+          mkdir -p deploy
+          cp target/*.jar deploy/application.jar
+          
+          # Create Procfile with JVM options inline
+          echo "web: java -Xms256m -Xmx512m -Dspring.profiles.active=prod -Dserver.port=5000 -Dlogging.file.path=/var/log/ -jar application.jar" > deploy/Procfile
+          
+          # Package everything up
+          cd deploy
+          zip -r application.zip application.jar Procfile
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: application-zip
-          path: ./api/deploy/application.zip
+            - name: Upload Artifact
+              uses: actions/upload-artifact@v4
+              with:
+                name: application-zip
+                path: ./api/deploy/application.zip
 
   deploy:
     name: Deploy to Elastic Beanstalk
