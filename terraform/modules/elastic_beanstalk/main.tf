@@ -34,7 +34,7 @@ resource "aws_elastic_beanstalk_environment" "env" {
     name      = "AssociatePublicIpAddress"
     value     = "true"
   }
-  
+
   # Set up EC2 instances
   setting {
     namespace = "aws:autoscaling:launchconfiguration"

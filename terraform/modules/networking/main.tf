@@ -24,7 +24,7 @@ resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
-  
+
   tags = {
     Name = "${var.project_name}-vpc"
   }
@@ -32,7 +32,7 @@ resource "aws_vpc" "main" {
 
 # Determine which VPC ID to use
 locals {
-  vpc_id = local.default_vpc_exists ? data.aws_vpc.default[0].id : aws_vpc.main[0].id
+  vpc_id   = local.default_vpc_exists ? data.aws_vpc.default[0].id : aws_vpc.main[0].id
   vpc_cidr = local.default_vpc_exists ? data.aws_vpc.default[0].cidr_block : aws_vpc.main[0].cidr_block
 }
 
@@ -62,24 +62,24 @@ data "aws_subnet" "default_subnets" {
 locals {
   # Map of subnets by AZ (if default VPC exists)
   subnet_by_az = local.default_vpc_exists ? {
-    for id, subnet in data.aws_subnet.default_subnets : 
+    for id, subnet in data.aws_subnet.default_subnets :
     subnet.availability_zone => subnet.id
   } : {}
-  
+
   # List of AZs that have default subnets
   available_azs = keys(local.subnet_by_az)
-  
+
   # Number of AZs with existing subnets
   existing_subnet_count = length(local.available_azs)
-  
+
   # We need at least required_subnet_count subnets
   subnets_needed = max(0, var.required_subnet_count - local.existing_subnet_count)
-  
+
   # Choose AZs for new subnets if we need to create any
-  new_subnet_azs = slice(data.aws_availability_zones.available_zones.names, 
-                          local.existing_subnet_count, 
-                          local.existing_subnet_count + local.subnets_needed)
-                         
+  new_subnet_azs = slice(data.aws_availability_zones.available_zones.names,
+    local.existing_subnet_count,
+  local.existing_subnet_count + local.subnets_needed)
+
   # Get existing subnet IDs if any
   existing_subnet_ids = [
     for az in local.available_azs : local.subnet_by_az[az]
@@ -88,12 +88,15 @@ locals {
 
 # Create subnets if needed (either because no default VPC or not enough default subnets)
 resource "aws_subnet" "additional_subnet" {
-  count             = local.subnets_needed
-  vpc_id            = local.vpc_id
-  # Create non-overlapping CIDR blocks
-  cidr_block        = cidrsubnet(local.vpc_cidr, 8, count.index + local.existing_subnet_count)
+  count  = local.subnets_needed
+  vpc_id = local.vpc_id
+
+  # Use a different subnet calculation to avoid conflicts
+  # Instead of starting from index local.existing_subnet_count, use a higher offset
+  cidr_block = cidrsubnet(local.vpc_cidr, 8, count.index + 100) # Start from index 100
+
   availability_zone = local.new_subnet_azs[count.index]
-  
+
   tags = {
     Name = "${var.project_name}-subnet-${count.index + 1}"
   }
@@ -103,7 +106,7 @@ resource "aws_subnet" "additional_subnet" {
 resource "aws_internet_gateway" "igw" {
   count  = local.default_vpc_exists ? 0 : 1
   vpc_id = aws_vpc.main[0].id
-  
+
   tags = {
     Name = "${var.project_name}-igw"
   }
@@ -113,12 +116,12 @@ resource "aws_internet_gateway" "igw" {
 resource "aws_route_table" "main" {
   count  = local.default_vpc_exists ? 0 : 1
   vpc_id = aws_vpc.main[0].id
-  
+
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.igw[0].id
   }
-  
+
   tags = {
     Name = "${var.project_name}-route-table"
   }
@@ -141,7 +144,7 @@ resource "aws_security_group" "app_sg" {
   name        = "${var.project_name}-app-sg"
   description = "Security group for application tier"
   vpc_id      = local.vpc_id
-  
+
   # Allow HTTP
   ingress {
     from_port   = 80
@@ -158,7 +161,7 @@ resource "aws_security_group" "app_sg" {
     cidr_blocks = ["0.0.0.0/0"] # Ideally replace with your specific IP
     description = "SSH access"
   }
-  
+
   # Allow HTTPS
   ingress {
     from_port   = 443
@@ -166,7 +169,7 @@ resource "aws_security_group" "app_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  
+
   # Allow outbound traffic
   egress {
     from_port   = 0
@@ -185,7 +188,7 @@ resource "aws_security_group" "db_sg" {
   name        = "${var.project_name}-db-sg"
   description = "Security group for database tier"
   vpc_id      = local.vpc_id
-  
+
   # Allow PostgreSQL traffic from application tier
   ingress {
     from_port       = 5432
@@ -194,14 +197,14 @@ resource "aws_security_group" "db_sg" {
     description     = "PostgreSQL traffic from application tier"
     security_groups = [aws_security_group.app_sg.id]
   }
-  
+
   # Allow PostgreSQL traffic from any IP for pgAdmin access
   ingress {
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
-    description     = "PostgreSQL traffic from any IP (pgAdmin access)"
-    cidr_blocks     = ["0.0.0.0/0"]  
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    description = "PostgreSQL traffic from any IP (pgAdmin access)"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {

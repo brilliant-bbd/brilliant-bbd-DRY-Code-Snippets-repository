@@ -22,6 +22,6 @@ output "db_name" {
 output "db_connection_string" {
   description = "PostgreSQL connection string (without credentials)"
   value       = "postgresql://${module.database.db_instance_endpoint}/${module.database.db_name}"
-  sensitive   = false  
+  sensitive   = false
 }
 
