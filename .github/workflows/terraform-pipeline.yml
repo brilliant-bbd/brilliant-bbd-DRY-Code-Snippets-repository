@@ -2,24 +2,30 @@ name: Terraform CI/CD
 
 on:
   push:
-    branches: [main, peo/new-terra]
+    branches: [main, peo/depoly-java]
+    paths:
+      - 'terraform/**'
+      - 'db/migrations/**'
+      - 'api/**'
+      - '.github/workflows/**'
   pull_request:
     branches: [main]
-  workflow_dispatch:  
+  workflow_dispatch:
 
 env:
-  TF_VERSION: 1.5.7
+  TF_VERSION: 1.11.2
   AWS_REGION: af-south-1
   ENVIRONMENT: prod
   FLYWAY_VERSION: 11.4.0
+  TF_CLI_ARGS: "-no-color"
+  TF_LOG: ""
 
 jobs:
   terraform:
     name: Terraform
     runs-on: ubuntu-latest
-    
+
     permissions:
-      id-token: write
       contents: read
       pull-requests: write
 
@@ -30,7 +36,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.11.2
+          terraform_version:  ${{ env.TF_VERSION }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -62,18 +68,27 @@ jobs:
         working-directory: terraform/environments/${{ env.ENVIRONMENT }}
         run: terraform validate
 
+      - name: Create Terraform Variables File
+        working-directory: terraform/environments/${{ env.ENVIRONMENT }}
+        run: |
+          cat > terraform.tfvars << EOF
+          db_username = "${{ secrets.DB_USERNAME }}"
+          db_password = "${{ secrets.DB_PASSWORD }}"
+          db_identifier = "${{ vars.DB_IDENTIFIER }}"
+          db_name = "${{ vars.DB_NAME }}"
+          eb_solution_stack_name = "${{ vars.EB_SOLUTION_STACK }}"
+          EOF
+          chmod 600 terraform.tfvars
+
+      - name: Terraform Refresh (Update State)
+        working-directory: terraform/environments/${{ env.ENVIRONMENT }}
+        run: terraform refresh -var-file=terraform.tfvars
+
       - name: Terraform Plan
         id: plan
         working-directory: terraform/environments/${{ env.ENVIRONMENT }}
         run: |
-          export TF_VAR_db_username=${{ secrets.DB_USERNAME }}
-          export TF_VAR_db_password=${{ secrets.DB_PASSWORD }}
-          export TF_VAR_db_identifier=${{ vars.DB_IDENTIFIER }}
-          export TF_VAR_db_name=${{ vars.DB_NAME }}
-          export TF_VAR_eb_solution_stack_name="${{ vars.EB_SOLUTION_STACK }}"
-          
-          terraform plan -no-color -input=false -out=tfplan
-        continue-on-error: true
+          terraform plan -input=false -var-file=terraform.tfvars -out=tfplan
 
       - name: Terraform Plan Status
         if: steps.plan.outcome == 'failure'
@@ -82,28 +97,22 @@ jobs:
       - name: Terraform Apply
         working-directory: terraform/environments/prod
         run: |
-          export TF_VAR_db_username=${{ secrets.DB_USERNAME }}
-          export TF_VAR_db_password=${{ secrets.DB_PASSWORD }}
-          export TF_VAR_db_identifier=${{ vars.DB_IDENTIFIER }}
-          export TF_VAR_db_name=${{ vars.DB_NAME }}
-          export TF_VAR_eb_solution_stack_name=${{ vars.EB_SOLUTION_STACK_NAME }}
-          
           terraform apply -auto-approve tfplan
 
   database-migrations:
     name: Flyway Database Migrations
     needs: terraform
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        
+
       - name: Setup Flyway
         run: |
           wget -qO- https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${FLYWAY_VERSION}/flyway-commandline-${FLYWAY_VERSION}-linux-x64.tar.gz | tar xvz
           sudo ln -s $(pwd)/flyway-${FLYWAY_VERSION}/flyway /usr/local/bin/flyway
-      
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -111,15 +120,22 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: af-south-1
 
-      - name: 📍 Get RDS Endpoint
+      - name: Wait for RDS Availability
+        run: |
+          until aws rds describe-db-instances --db-instance-identifier ${{ vars.DB_IDENTIFIER }} --query 'DBInstances[0].DBInstanceStatus' --output text | grep -q "available"; do
+            echo "Waiting for RDS to be available..."
+            sleep 30
+          done
+
+      - name: Get RDS Endpoint
         id: get-endpoint
         run: |
           ENDPOINT=$(aws rds describe-db-instances --db-instance-identifier ${{ vars.DB_IDENTIFIER }} --query 'DBInstances[0].Endpoint.Address' --output text)
           echo "RDS_ENDPOINT=$ENDPOINT" >> $GITHUB_ENV
-      
+
       - name: Run Flyway Migrations
         working-directory: ./db/migrations
-        run: |          
+        run: |
           # Create Flyway config file
           cat > flyway.conf << EOF
           flyway.url=jdbc:postgresql://${RDS_ENDPOINT}/${{ vars.DB_NAME }}
@@ -129,15 +145,171 @@ jobs:
           flyway.baselineOnMigrate=true
           flyway.schemas=public
           EOF
-          
-          # Debug - show the created config file (without password)
-          cat flyway.conf | grep -v password
+          chmod 600 flyway.conf
           
           # Run migrations
           flyway info
           flyway migrate
           flyway info
-        
+
       - name: Migration Status Summary
         run: |
           echo "Database migration completed"
+  
+  test-api:
+    name: Build and Test API
+    runs-on: ubuntu-latest
+    needs: database-migrations
+
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set Up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Cache Maven Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: maven-
+
+      - name: Run Tests
+        working-directory: ./api
+        run: mvn clean test
+
+  build-jar:
+    name: Build JAR
+    runs-on: ubuntu-latest
+    needs: test-api
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set Up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Cache Maven Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: maven-
+
+      - name: Build with Maven
+        working-directory: ./api
+        run: mvn clean package -DskipTests
+
+      - name: Prepare Deployment Package
+        working-directory: ./api
+        run: |
+          mkdir -p deploy
+          cp target/*.jar deploy/application.jar
+          cd deploy
+          zip -r application.zip application.jar
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: application-zip
+          path: ./api/deploy/application.zip
+
+  deploy:
+    name: Deploy to Elastic Beanstalk
+    runs-on: ubuntu-latest
+    needs: build-jar
+
+    steps:
+      - name: Download Built Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: application-zip
+          path: deploy
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: af-south-1
+
+      - name: Get Beanstalk Environment Name
+        run: |
+          ENV_NAME=$(aws elasticbeanstalk describe-environments \
+            --application-name ${{ vars.AWS_EB_APP_NAME }} \
+            --query "Environments[0].EnvironmentName" --output text)
+          echo "ENV_NAME=$ENV_NAME" >> $GITHUB_ENV
+
+      - name: Deploy to Elastic Beanstalk
+        run: |
+          VERSION_LABEL="v-$(date +%Y%m%d-%H%M%S)"
+    
+          aws s3 cp deploy/application.zip s3://dry-code-snippets-bucket/\
+          ${{ vars.AWS_EB_APP_NAME }}/$VERSION_LABEL/application.zip
+          
+          aws elasticbeanstalk create-application-version \
+          --application-name ${{ vars.AWS_EB_APP_NAME }} \
+          --version-label "$VERSION_LABEL" \
+          --source-bundle S3Bucket=dry-code-snippets-bucket,S3Key="${{ vars.AWS_EB_APP_NAME }}/$VERSION_LABEL/application.zip" \
+          
+          aws elasticbeanstalk update-environment \
+          --environment-name $ENV_NAME \
+          --version-label "$VERSION_LABEL" \
+          --application-name ${{ vars.AWS_EB_APP_NAME }}
+
+  verify-deployment:
+    name: Verify Deployment
+    runs-on: ubuntu-latest
+    needs: deploy
+
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: af-south-1
+
+      - name: Wait for Environment to be Ready
+        run: |
+          MAX_ATTEMPTS=30
+          ATTEMPT=0
+          
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]
+          do
+            STATUS=$(aws elasticbeanstalk describe-environments \
+              --environment-names ${{ env.ENV_NAME }} \
+              --query "Environments[0].Status" --output text)
+          
+            HEALTH=$(aws elasticbeanstalk describe-environments \
+              --environment-names ${{ env.ENV_NAME }} \
+              --query "Environments[0].Health" --output text)
+          
+            echo "Environment Status: $STATUS, Health: $HEALTH"
+          
+            if [ "$STATUS" = "Ready" ] && [ "$HEALTH" = "Green" ]; then
+              echo "✅ Deployment successful!"
+              break
+            elif [ "$STATUS" = "Ready" ] && [ "$HEALTH" = "Red" ]; then
+              echo "❌ Deployment failed - environment is unhealthy"
+              exit 1
+            fi
+          
+            ATTEMPT=$((ATTEMPT+1))
+            echo "Waiting for deployment to complete... ($ATTEMPT/$MAX_ATTEMPTS)"
+            sleep 30
+          done
+          
+          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+            echo "❌ Deployment verification timed out"
+            exit 1
+          fi

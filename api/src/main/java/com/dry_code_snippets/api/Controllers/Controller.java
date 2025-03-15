@@ -11,4 +11,9 @@ public class Controller {
     public String hello(@RequestParam String name) {
         return "Hello, " + name + "!";
     }
+
+    @GetMapping("/")
+    public String health() {
+        return "Healthy";
+    }
 }

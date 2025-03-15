@@ -8,7 +8,7 @@ terraform {
     bucket       = "dry-code-snippets-bucket"
     key          = "prod/terraform.tfstate"
     region       = "af-south-1"
-    use_lockfile = "terraform-state-locks"
+    use_lockfile = true
     encrypt      = true
   }
 }
