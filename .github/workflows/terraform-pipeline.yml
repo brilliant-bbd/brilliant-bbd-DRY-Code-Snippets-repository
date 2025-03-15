@@ -14,134 +14,8 @@ env:
   FLYWAY_VERSION: 11.4.0
 
 jobs:
-  terraform:
-    name: Terraform
-    runs-on: ubuntu-latest
-    
-    permissions:
-      id-token: write
-      contents: read
-      pull-requests: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: ${{ env.TF_VERSION }}
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: af-south-1
-
-      - name: Create backend configuration
-        run: |
-          cat > backend.hcl << EOF
-          bucket         = "dry-code-snippets-bucket"
-          key            = "${ENVIRONMENT}/terraform.tfstate"
-          region         = "af-south-1"
-          use_lockfile   = true
-          encrypt        = true
-          EOF
-
-      - name: Terraform Init
-        working-directory: terraform/environments/${{ env.ENVIRONMENT }}
-        run: terraform init -backend-config=../../../backend.hcl
-
-      - name: Terraform Format Check
-        working-directory: terraform/environments/${{ env.ENVIRONMENT }}
-        run: terraform fmt -check -recursive
-        continue-on-error: true
-
-      - name: Terraform Validate
-        working-directory: terraform/environments/${{ env.ENVIRONMENT }}
-        run: terraform validate
-
-      - name: Terraform Plan
-        id: plan
-        working-directory: terraform/environments/${{ env.ENVIRONMENT }}
-        run: |
-          export TF_VAR_db_username=${{ secrets.DB_USERNAME }}
-          export TF_VAR_db_password=${{ secrets.DB_PASSWORD }}
-          export TF_VAR_db_identifier=${{ vars.DB_IDENTIFIER }}
-          export TF_VAR_db_name=${{ vars.DB_NAME }}
-          export TF_VAR_eb_solution_stack_name="${{ vars.EB_SOLUTION_STACK }}"
-          
-          terraform plan -no-color -input=false -out=tfplan
-        continue-on-error: true
-
-      - name: Terraform Plan Status
-        if: steps.plan.outcome == 'failure'
-        run: exit 1
-
-      - name: Terraform Apply
-        working-directory: terraform/environments/prod
-        run: |
-          export TF_VAR_db_username=${{ secrets.DB_USERNAME }}
-          export TF_VAR_db_password=${{ secrets.DB_PASSWORD }}
-          export TF_VAR_db_identifier=${{ vars.DB_IDENTIFIER }}
-          export TF_VAR_db_name=${{ vars.DB_NAME }}
-          export TF_VAR_eb_solution_stack_name=${{ vars.EB_SOLUTION_STACK_NAME }}
-          
-          terraform apply -auto-approve tfplan
-
-  database-migrations:
-    name: Flyway Database Migrations
-    needs: terraform
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        
-      - name: Setup Flyway
-        run: |
-          wget -qO- https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${FLYWAY_VERSION}/flyway-commandline-${FLYWAY_VERSION}-linux-x64.tar.gz | tar xvz
-          sudo ln -s $(pwd)/flyway-${FLYWAY_VERSION}/flyway /usr/local/bin/flyway
-      
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: af-south-1
-
-      - name: 📍 Get RDS Endpoint
-        id: get-endpoint
-        run: |
-          ENDPOINT=$(aws rds describe-db-instances --db-instance-identifier ${{ vars.DB_IDENTIFIER }} --query 'DBInstances[0].Endpoint.Address' --output text)
-          echo "RDS_ENDPOINT=$ENDPOINT" >> $GITHUB_ENV
-      
-      - name: Run Flyway Migrations
-        working-directory: ./db/migrations
-        run: |          
-          # Create Flyway config file
-          cat > flyway.conf << EOF
-          flyway.url=jdbc:postgresql://${RDS_ENDPOINT}/${{ vars.DB_NAME }}
-          flyway.user=${{ secrets.DB_USERNAME }}
-          flyway.password=${{ secrets.DB_PASSWORD }}
-          flyway.locations=filesystem:./sql
-          flyway.baselineOnMigrate=true
-          flyway.schemas=public
-          EOF
-          
-          # Run migrations
-          flyway info
-          flyway migrate
-          flyway info
-        
-      - name: Migration Status Summary
-        run: |
-          echo "Database migration completed"
-
   test-api:
     name: Build and Test API
-    needs: database-migrations
     runs-on: ubuntu-latest
 
     steps:
@@ -233,16 +107,24 @@ jobs:
 
       - name: Deploy to Elastic Beanstalk
         run: |
-          aws elasticbeanstalk update-application-version \
+          # Generate a version label with timestamp
+          VERSION_LABEL="v-$(date +%Y%m%d-%H%M%S)"
+          echo "Using version: $VERSION_LABEL"
+          
+          # Upload the application bundle to S3
+          aws s3 cp deploy/application.zip s3://dry-code-snippets-bucket/builds/application-$VERSION_LABEL.zip
+          
+          # Create a new application version
+          aws elasticbeanstalk create-application-version \
           --application-name ${{ vars.AWS_EB_APP_NAME }} \
-          --version-label "v-$(date +%Y%m%d-%H%M%S)" \
-          --source-bundle S3Location={S3Bucket=dry-code-snippets-bucket,S3Key=deploy/application.zip}
-
-          # Update the environment with the deployed application
+          --version-label "$VERSION_LABEL" \
+          --source-bundle S3Bucket="dry-code-snippets-bucket",S3Key="builds/application-$VERSION_LABEL.zip"
+          
+          # Update the environment to use the new version
           aws elasticbeanstalk update-environment \
-          --environment-name $ENV_NAME \
-          --version-label "v-$(date +%Y%m%d-%H%M%S)" \
-          --application-name ${{ vars.AWS_EB_APP_NAME }}
+          --environment-name "$ENV_NAME" \
+          --application-name ${{ vars.AWS_EB_APP_NAME }} \
+          --version-label "$VERSION_LABEL"
 
   verify-deployment:
     name: Verify Deployment
