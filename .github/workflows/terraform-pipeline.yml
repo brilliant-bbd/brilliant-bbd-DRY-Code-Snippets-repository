@@ -2,7 +2,7 @@ name: Terraform CI/CD
 
 on:
   push:
-    branches: [main, peo/depoly-java ]
+    branches: [main, peo/depoly-java]
   pull_request:
     branches: [main]
   workflow_dispatch:  
@@ -233,76 +233,77 @@ jobs:
           aws elasticbeanstalk update-environment \
             --environment-name $ENV_NAME \
             --application-name ${{ vars.AWS_EB_APP_NAME }}
+
   verify-deployment:
-  name: Verify Deployment
-  runs-on: ubuntu-latest
-  needs: deploy
+    name: Verify Deployment
+    runs-on: ubuntu-latest
+    needs: deploy
 
-  steps:
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: af-south-1
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: af-south-1
 
-    - name: Wait for Environment to be Ready
-      run: |
-        MAX_ATTEMPTS=30
-        ATTEMPT=0
-        
-        while [ $ATTEMPT -lt $MAX_ATTEMPTS ]
-        do
-          STATUS=$(aws elasticbeanstalk describe-environments \
-            --environment-names ${{ env.ENV_NAME }} \
-            --query "Environments[0].Status" --output text)
-        
-          HEALTH=$(aws elasticbeanstalk describe-environments \
-            --environment-names ${{ env.ENV_NAME }} \
-            --query "Environments[0].Health" --output text)
-        
-          echo "Environment Status: $STATUS, Health: $HEALTH"
-        
-          if [ "$STATUS" = "Ready" ] && [ "$HEALTH" = "Green" ]; then
-            echo "✅ Deployment successful!"
-            break
-          elif [ "$STATUS" = "Ready" ] && [ "$HEALTH" = "Red" ]; then
-            echo "❌ Deployment failed - environment is unhealthy"
+      - name: Wait for Environment to be Ready
+        run: |
+          MAX_ATTEMPTS=30
+          ATTEMPT=0
+          
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]
+          do
+            STATUS=$(aws elasticbeanstalk describe-environments \
+              --environment-names ${{ env.ENV_NAME }} \
+              --query "Environments[0].Status" --output text)
+          
+            HEALTH=$(aws elasticbeanstalk describe-environments \
+              --environment-names ${{ env.ENV_NAME }} \
+              --query "Environments[0].Health" --output text)
+          
+            echo "Environment Status: $STATUS, Health: $HEALTH"
+          
+            if [ "$STATUS" = "Ready" ] && [ "$HEALTH" = "Green" ]; then
+              echo "✅ Deployment successful!"
+              break
+            elif [ "$STATUS" = "Ready" ] && [ "$HEALTH" = "Red" ]; then
+              echo "❌ Deployment failed - environment is unhealthy"
+              exit 1
+            fi
+          
+            ATTEMPT=$((ATTEMPT+1))
+            echo "Waiting for deployment to complete... ($ATTEMPT/$MAX_ATTEMPTS)"
+            sleep 30
+          done
+          
+          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+            echo "❌ Deployment verification timed out"
             exit 1
           fi
-        
-          ATTEMPT=$((ATTEMPT+1))
-          echo "Waiting for deployment to complete... ($ATTEMPT/$MAX_ATTEMPTS)"
-          sleep 30
-        done
-        
-        if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
-          echo "❌ Deployment verification timed out"
-          exit 1
-        fi
 
-    - name: Health Check API
-      run: |
-        EB_URL=$(aws elasticbeanstalk describe-environments \
-          --environment-names ${{ env.ENV_NAME }} \
-          --query "Environments[0].CNAME" --output text)
-        
-        # Adjust the health endpoint to match your application
-        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://$EB_URL/health || echo "Failed")
-        
-        echo "Health check status: $HTTP_STATUS"
-        
-        if [ "$HTTP_STATUS" = "200" ]; then
-          echo "✅ API health check passed"
-        else
-          echo "❌ API health check failed"
-          exit 1
-        fi
+      - name: Health Check API
+        run: |
+          EB_URL=$(aws elasticbeanstalk describe-environments \
+            --environment-names ${{ env.ENV_NAME }} \
+            --query "Environments[0].CNAME" --output text)
+          
+          # Adjust the health endpoint to match your application
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://$EB_URL/health || echo "Failed")
+          
+          echo "Health check status: $HTTP_STATUS"
+          
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "✅ API health check passed"
+          else
+            echo "❌ API health check failed"
+            exit 1
+          fi
 
-    - name: Log Recent Events
-      if: always()
-      run: |
-        echo "Recent environment events:"
-        aws elasticbeanstalk describe-events \
-          --environment-name $ENV_NAME \
-          --max-items 10
+      - name: Log Recent Events
+        if: always()
+        run: |
+          echo "Recent environment events:"
+          aws elasticbeanstalk describe-events \
+            --environment-name $ENV_NAME \
+            --max-items 10
