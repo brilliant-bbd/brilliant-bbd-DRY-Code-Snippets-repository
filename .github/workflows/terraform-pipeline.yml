@@ -235,11 +235,13 @@ jobs:
         run: |
           aws elasticbeanstalk update-application-version \
           --application-name ${{ vars.AWS_EB_APP_NAME }} \
+          --version-label "v-$(date +%Y%m%d-%H%M%S)" \
           --source-bundle S3Location={S3Bucket=dry-code-snippets-bucket,S3Key=deploy/application.zip}
 
           # Update the environment with the deployed application
           aws elasticbeanstalk update-environment \
           --environment-name $ENV_NAME \
+          --version-label "v-$(date +%Y%m%d-%H%M%S)" \
           --application-name ${{ vars.AWS_EB_APP_NAME }}
 
   verify-deployment:
