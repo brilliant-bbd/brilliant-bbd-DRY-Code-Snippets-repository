@@ -203,7 +203,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: application-zip
-          path: deploy/application.zip
+          path: ./api/deploy/application.zip
 
   deploy:
     name: Deploy to Elastic Beanstalk
@@ -233,9 +233,14 @@ jobs:
 
       - name: Deploy to Elastic Beanstalk
         run: |
+          aws elasticbeanstalk update-application-version \
+          --application-name ${{ vars.AWS_EB_APP_NAME }} \
+          --source-bundle S3Location={S3Bucket=dry-code-snippets-bucket,S3Key=deploy/application.zip}
+
+          # Update the environment with the deployed application
           aws elasticbeanstalk update-environment \
-            --environment-name $ENV_NAME \
-            --application-name ${{ vars.AWS_EB_APP_NAME }}
+          --environment-name $ENV_NAME \
+          --application-name ${{ vars.AWS_EB_APP_NAME }}
 
   verify-deployment:
     name: Verify Deployment
