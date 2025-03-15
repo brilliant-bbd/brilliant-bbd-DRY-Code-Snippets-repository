@@ -13,11 +13,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.dry_code_snippets.util.OutputHelper.cliPrint;
+import static com.dry_code_snippets.util.OutputHelper.debugPrint;
 
 public class GoogleAuthHandler {
     ;
     private static String CLIENT_ID;
-    private static  String CLIENT_SECRET;
+    private static String CLIENT_SECRET;
     private static final String REDIRECT_URI = "http://localhost:9090/callback";
 
     public static String jwtToken = "";
@@ -49,9 +50,14 @@ public class GoogleAuthHandler {
                     if (authCodeMatcher.find()) {
                         String authCode = authCodeMatcher.group(1);
                         jwtToken = getJwtToken(authCode);
-                        output = "Login successful.";
+                        if (jwtToken == null) {
+                            output = "ERROR: Login unsuccessful. Try again";
+                        } else {
+                            output = "Login successful.";
+                            debugPrint("JWT: " + jwtToken);
+                        }
                     } else {
-                        output = "Login unsuccessful. Try again";
+                        output = "ERROR: Login unsuccessful. Try again";
                     }
 
                 }
@@ -61,7 +67,7 @@ public class GoogleAuthHandler {
                 callbackServer.stop(0);
 
             } catch (Exception e) {
-                System.out.println("Login unsuccessful. Try again");
+                cliPrint("ERROR: Login unsuccessful. Try again");
                 callbackServer.stop(0);
             }
 
@@ -90,9 +96,7 @@ public class GoogleAuthHandler {
             // Matches the JWT Token
             return matcher.group(1);
         } else {
-            return "No JWT found";
+            return null;
         }
-
     }
-
 }
