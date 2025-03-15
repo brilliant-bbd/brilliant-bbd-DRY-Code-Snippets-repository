@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 import static com.dry_code_snippets.util.OutputHelper.cliPrint;
 
 public class GoogleAuthHandler {
-    ;
+
     private static String CLIENT_ID;
     private static  String CLIENT_SECRET;
     private static final String REDIRECT_URI = "http://localhost:9090/callback";
@@ -49,6 +49,7 @@ public class GoogleAuthHandler {
                     if (authCodeMatcher.find()) {
                         String authCode = authCodeMatcher.group(1);
                         jwtToken = getJwtToken(authCode);
+                        System.out.println(jwtToken);
                         output = "Login successful.";
                     } else {
                         output = "Login unsuccessful. Try again";
