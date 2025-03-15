@@ -200,7 +200,7 @@ jobs:
           zip -r application.zip application.jar
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: application-zip
           path: deploy/application.zip
@@ -212,7 +212,7 @@ jobs:
 
     steps:
       - name: Download Built Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: application-zip
           path: deploy
