@@ -10,13 +10,12 @@ public class SnippetTest {
 
     @Test
     public void testSnippetRecordCreation() {
-        Snippet snippet = new Snippet("0000001000000212220021201", "Test Snippet", "This is a test description", "System.out.println(\"Hello World\");", 1);
+        Snippet snippet = new Snippet(1L, "Test Snippet", "This is a test description", 1);
 
         assertNotNull(snippet);
         assertEquals("userId", snippet.getUserId());
         assertEquals("Test Snippet", snippet.getTitle());
         assertEquals("This is a test description", snippet.getDescription());
-        assertEquals("System.out.println(\"Hello World\");", snippet.getCode());
         assertEquals(1, snippet.getLanguageId());
     }
 }

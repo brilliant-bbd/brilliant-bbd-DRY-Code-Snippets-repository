@@ -19,7 +19,7 @@ public class Snippet {
     private Long snippetId;
 
     @Column(name = "userId")
-    private UUID userId;
+    private Long userId;
 
     @Column(name = "title", nullable = false, length = 256)
     private String title;
@@ -27,26 +27,13 @@ public class Snippet {
     @Column(name = "description", nullable = false)
     private String description;
 
-    @Column(name = "code", nullable = false)
-    private String code;
-
     @Column(name = "languageId", nullable = false)
     private int languageId;
 
-    @Column(name = "updatedAt")
-    private LocalDateTime updatedAt;
-
-    @Column(name = "isDeleted")
-    private Boolean isDeleted;
-
-    @Column(name = "createdAt")
-    private LocalDateTime createdAt;
-
-    public Snippet(String userId, String title, String description, String code, int languageId) {
-        this.userId = UUID.fromString(userId);
+    public Snippet(Long userId, String title, String description, int languageId) {
+        this.userId = userId; 
         this.title = title;
         this.description = description;
-        this.code = code;
         this.languageId = languageId;
     }
 }

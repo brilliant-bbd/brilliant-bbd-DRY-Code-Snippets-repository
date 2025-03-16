@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.dry_code_snippets.DTO.SnippetDTO;
 import com.dry_code_snippets.api.Models.Snippet;
 import com.dry_code_snippets.api.Services.SnippetService;
 
@@ -16,9 +17,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/snippets")
-// @PreAuthorize("hasRole('ROLE_USER')")  // need to define role
 public class SnippetController {
-
     private final SnippetService snippetService;
 
     @Autowired
@@ -28,8 +27,18 @@ public class SnippetController {
 
     // Get all snippets
     @GetMapping
-    public List<Snippet> getAllSnippets() {
-        return snippetService.getAllSnippets();
+    public ResponseEntity<List<Snippet>> getAllSnippets(
+        @RequestParam(required = false) String tags, 
+        @RequestParam(required = false) String language) {
+
+        List<Snippet> snippets = snippetService.getAllSnippets(tags, language);
+        
+        // Return the filtered snippets, or 204 if none found
+        if (snippets.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(snippets);
     }
 
     // Get a snippet by ID
@@ -41,16 +50,16 @@ public class SnippetController {
 
     // Create a new snippet
     @PostMapping
-    public ResponseEntity<Snippet> createSnippet(@RequestBody @Valid Snippet snippet) {
+    public ResponseEntity<Snippet> createSnippet(@RequestBody @Valid SnippetDTO snippet) {
         Snippet createdSnippet = snippetService.createSnippet(snippet);
         return new ResponseEntity<>(createdSnippet, HttpStatus.CREATED);
     }
 
     // Update a snippet
     @PutMapping("/{id}")
-    public ResponseEntity<Snippet> updateSnippet(@PathVariable("id") Long id, @RequestBody Snippet snippet) {
+    public ResponseEntity<Snippet> updateSnippet(@PathVariable("id") Long id, @RequestBody SnippetDTO snippet) {
         Snippet updatedSnippet = snippetService.updateSnippet(id, snippet);
-        return updatedSnippet != null ? ResponseEntity.ok(updatedSnippet) : ResponseEntity.notFound().build();
+        return updatedSnippet != null ? ResponseEntity.ok(updatedSnippet) : ResponseEntity.badRequest().build();
     }
 
     // Delete a snippet

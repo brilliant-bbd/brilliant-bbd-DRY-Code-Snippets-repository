@@ -1,5 +1,6 @@
 package com.dry_code_snippets.api.Models;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import jakarta.persistence.*;
@@ -20,8 +21,13 @@ public class User {
 
     @Column(name = "userGuid")
     private UUID userGuid;
+
+    @Column(name = "createdAt")
+    private LocalDateTime createdAt;
+
     public User(UUID userGuid)
     {
         this.userGuid = userGuid;
+        this.createdAt = LocalDateTime.now();
     }
 }

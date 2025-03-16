@@ -1,5 +1,6 @@
 package com.dry_code_snippets.api.Snippets;
 
+import com.dry_code_snippets.DTO.SnippetDTO;
 import com.dry_code_snippets.api.Models.Snippet;
 import com.dry_code_snippets.api.Repositories.SnippetRepository;
 import com.dry_code_snippets.api.Services.SnippetService;
@@ -10,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,10 +34,9 @@ class SnippetServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         snippet = new Snippet(
-            "user",
+            1L,
             "Test Title",
             "Test Description",
-            "System.out.println(\"Hello World\");",
             1
         );
     }
@@ -44,7 +45,7 @@ class SnippetServiceTest {
     void testGetAllSnippets() {
         when(snippetRepository.findAll()).thenReturn(List.of(snippet));
 
-        List<Snippet> snippets = snippetService.getAllSnippets();
+        List<Snippet> snippets = snippetService.getAllSnippets(String tag, String language);
 
         assertNotNull(snippets);
         assertEquals(1, snippets.size());
@@ -66,8 +67,8 @@ class SnippetServiceTest {
     @Test
     void testCreateSnippet() {
         when(snippetRepository.save(any(Snippet.class))).thenReturn(snippet);
-
-        Snippet createdSnippet = snippetService.createSnippet(snippet);
+        SnippetDTO snippetDTO = new SnippetDTO(2L, 1L, "some title", "some description", "java", LocalDateTime.now(), "this is the code");
+        Snippet createdSnippet = snippetService.createSnippet(snippetDTO);
 
         assertNotNull(createdSnippet);
         assertEquals("Test Title", createdSnippet.getTitle());
