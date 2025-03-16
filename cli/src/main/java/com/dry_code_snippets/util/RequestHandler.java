@@ -1,19 +1,17 @@
 package com.dry_code_snippets.util;
 
-import io.github.cdimascio.dotenv.Dotenv;
-
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-
-import static com.dry_code_snippets.util.OutputHelper.cliPrint;
+import static com.dry_code_snippets.util.EnvLoader.getApiBaseUrl;
+import static com.dry_code_snippets.util.GoogleAuthHandler.getJwt;
 import static com.dry_code_snippets.util.OutputHelper.debugPrint;
 
 public class RequestHandler {
-    private static final String BASE_URL =  Dotenv.load().get("API_BASE_URL");
+    private static final String BASE_URL = getApiBaseUrl();
     private static final HttpClient CLIENT = HttpClient.newHttpClient();
 
     private static String buildUrl(String path, String queryParams) {
@@ -62,7 +60,7 @@ public class RequestHandler {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(buildUrl(path, queryParams)))
-                    .header("Authorization", "Bearer " + GoogleAuthHandler.jwtToken)
+                    .header("Authorization", "Bearer " + getJwt())
                     .GET()
                     .build();
 
@@ -79,7 +77,7 @@ public class RequestHandler {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(buildUrl(path, queryParams)))
-                    .header("Authorization", "Bearer " + GoogleAuthHandler.jwtToken)
+                    .header("Authorization", "Bearer " + getJwt())
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
                     .build();
@@ -97,7 +95,7 @@ public class RequestHandler {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(buildUrl(path, queryParams)))
-                    .header("Authorization", "Bearer " + GoogleAuthHandler.jwtToken)
+                    .header("Authorization", "Bearer " + getJwt())
                     .header("Content-Type", "application/json")
                     .PUT(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
                     .build();
@@ -115,7 +113,7 @@ public class RequestHandler {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(buildUrl(path, queryParams)))
-                    .header("Authorization", "Bearer " + GoogleAuthHandler.jwtToken)
+                    .header("Authorization", "Bearer " + getJwt())
                     .DELETE()
                     .build();
 

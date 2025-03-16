@@ -47,7 +47,7 @@ public class InputHelper {
 
         while (input.isBlank()) {
             changeTextYellow();
-            System.out.println(message + " - Press enter to submit");
+            System.out.println("\r" + message + " - Press enter to submit");
             changeTextWhite();
             input = scanner.nextLine();
             if (input.trim().length() > maxLength) {
@@ -79,7 +79,7 @@ public class InputHelper {
 
         while (input.toString().isBlank()) {
             changeTextYellow();
-            System.out.println(message + " - Type '$DONE' on a new line to finish:");
+            System.out.println("\r" + message + " - Type '$DONE' on a new line to finish:");
             changeTextWhite();
 
             while (scanner.hasNextLine()) {
