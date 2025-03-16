@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "snippets")
@@ -29,6 +27,9 @@ public class Snippet {
 
     @Column(name = "languageId", nullable = false)
     private int languageId;
+
+    @Column(name = "isDeleted")
+    private boolean isDeleted;
 
     public Snippet(Long userId, String title, String description, int languageId) {
         this.userId = userId; 

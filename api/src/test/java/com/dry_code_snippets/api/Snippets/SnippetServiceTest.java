@@ -29,23 +29,25 @@ class SnippetServiceTest {
     private SnippetService snippetService;
 
     private Snippet snippet;
+    private SnippetDTO snippetDTO;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         snippet = new Snippet(
-            1L,
-            "Test Title",
-            "Test Description",
-            1
-        );
+                1L,
+                "Test Title",
+                "Test Description",
+                1);
+        snippetDTO = new SnippetDTO(2L, 1L, "some title", "some description", "java", LocalDateTime.now(),
+                "this is the code");
     }
 
     @Test
     void testGetAllSnippets() {
         when(snippetRepository.findAll()).thenReturn(List.of(snippet));
 
-        List<Snippet> snippets = snippetService.getAllSnippets(String tag, String language);
+        List<Snippet> snippets = snippetService.getAllSnippets(null, null);
 
         assertNotNull(snippets);
         assertEquals(1, snippets.size());
@@ -67,7 +69,8 @@ class SnippetServiceTest {
     @Test
     void testCreateSnippet() {
         when(snippetRepository.save(any(Snippet.class))).thenReturn(snippet);
-        SnippetDTO snippetDTO = new SnippetDTO(2L, 1L, "some title", "some description", "java", LocalDateTime.now(), "this is the code");
+        SnippetDTO snippetDTO = new SnippetDTO(2L, 1L, "some title", "some description", "java", LocalDateTime.now(),
+                "this is the code");
         Snippet createdSnippet = snippetService.createSnippet(snippetDTO);
 
         assertNotNull(createdSnippet);
@@ -79,8 +82,7 @@ class SnippetServiceTest {
     void testUpdateSnippet() {
         when(snippetRepository.existsById(1L)).thenReturn(true);
         when(snippetRepository.save(any(Snippet.class))).thenReturn(snippet);
-
-        Snippet updatedSnippet = snippetService.updateSnippet(1L, snippet);
+        Snippet updatedSnippet = snippetService.updateSnippet(1L, snippetDTO);
 
         assertNotNull(updatedSnippet);
         assertEquals("Test Title", updatedSnippet.getTitle());
@@ -92,7 +94,7 @@ class SnippetServiceTest {
     void testUpdateSnippetNotFound() {
         when(snippetRepository.existsById(1L)).thenReturn(false);
 
-        Snippet updatedSnippet = snippetService.updateSnippet(1L, snippet);
+        Snippet updatedSnippet = snippetService.updateSnippet(1L, snippetDTO);
 
         assertNull(updatedSnippet);
         verify(snippetRepository, times(1)).existsById(1L);

@@ -11,7 +11,6 @@ import com.dry_code_snippets.api.Services.SnippetService;
 
 import jakarta.validation.Valid;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,7 +32,6 @@ public class SnippetController {
 
         List<Snippet> snippets = snippetService.getAllSnippets(tags, language);
         
-        // Return the filtered snippets, or 204 if none found
         if (snippets.isEmpty()) {
             return ResponseEntity.noContent().build();
         }

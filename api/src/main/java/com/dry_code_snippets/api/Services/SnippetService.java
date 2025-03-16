@@ -31,44 +31,26 @@ public class SnippetService {
     private final UserRepository userRepository;
     private final VersionRepository versionRepository;
     private final LanguageRepository languageRepository;
-
+    private final UserService userService;
     @Autowired
     public SnippetService(SnippetRepository snippetRepository, UserRepository userRepository,
-            VersionRepository versionRepository, LanguageRepository languageRepository) {
+            VersionRepository versionRepository, LanguageRepository languageRepository,
+            UserService userService) {
         this.snippetRepository = snippetRepository;
         this.userRepository = userRepository;
         this.versionRepository = versionRepository;
         this.languageRepository = languageRepository;
+        this.userService=userService;
     }
 
-    private UUID getClaim() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UUID userGuid = null;
-        if (authentication instanceof JwtAuthenticationToken) {
-            JwtAuthenticationToken jwtToken = (JwtAuthenticationToken) authentication;
-            Jwt jwt = jwtToken.getToken();
-
-            userGuid = convertStringToUUID(jwt.getClaim("sub"));
-        }
-        return userGuid;
-    }
+    
 
     public List<Snippet> getAllSnippets(String tag, String language) {
         if (tag != null && !tag.isEmpty() && language != null && !language.isEmpty()) {
             List<String> tags = Arrays.asList(tag.split(";"));
-            return snippetRepository.findByLanguageAndTagsAndNotDeleted(language, tags);
+            return snippetRepository.findByLanguageAndTagsAndNotisDeleted(language,tags);
         }
-
-        if (language != null && !language.isEmpty()) {
-            return snippetRepository.findByLanguageAndNotDeleted(language);
-        }
-
-        if (tag != null && !tag.isEmpty()) {
-            List<String> tags = Arrays.asList(tag.split(";"));
-            return snippetRepository.findByTagsAndNotDeleted(tags);
-        }
-
-        return snippetRepository.findAllByDeletedFalse();
+        return snippetRepository.findAll();
     }
 
     public Optional<Snippet> getSnippetById(Long snippetId) {
@@ -82,9 +64,9 @@ public class SnippetService {
             throw new IllegalArgumentException("Language not found");
         }
 
-        User user = userRepository.findByUserGuid(getClaim());
+        User user = userRepository.findByUserGuid(userService.getClaim());
         if (user == null) {
-            user = new User(getClaim());
+            user = new User(userService.getClaim());
             user = userRepository.save(user);
         }
 
@@ -98,33 +80,15 @@ public class SnippetService {
         return savedSnippet;
     }
 
-    public static UUID convertStringToUUID(String largeNumberString) {
-        if (largeNumberString == null || largeNumberString.length() > 32) {
-            throw new IllegalArgumentException("String is too long or invalid for a valid UUID.");
-        }
-
-        while (largeNumberString.length() < 32) {
-            largeNumberString = "0" + largeNumberString;
-        }
-
-        String highBitsString = largeNumberString.substring(0, 16);
-        String lowBitsString = largeNumberString.substring(16);
-
-        long highBits = Long.parseLong(highBitsString, 16);
-        long lowBits = Long.parseLong(lowBitsString, 16);
-
-        return new UUID(highBits, lowBits);
-    }
-
     @Transactional
-public Snippet updateSnippet(Long snippetId, SnippetDTO snippetDTO) {
+    public Snippet updateSnippet(Long snippetId, SnippetDTO snippetDTO) {
     Snippet existingSnippet = snippetRepository.findById(snippetId).orElse(null);
     
     if (existingSnippet == null) {
         throw new IllegalArgumentException("Snippet not found");
     }
 
-    User user = userRepository.findByUserGuid(getClaim());
+    User user = userRepository.findByUserGuid(userService.getClaim());
 
     if (user == null) {
         throw new IllegalStateException("User not found");
