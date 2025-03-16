@@ -11,6 +11,5 @@ import com.dry_code_snippets.api.Models.User;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     User findByUserGuid(UUID userGuid);
-    // Custom queries can be added here if needed
 
 }

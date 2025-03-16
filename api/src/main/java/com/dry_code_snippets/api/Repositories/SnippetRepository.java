@@ -21,7 +21,7 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
     List<Snippet> findByLanguageAndTagsAndNotisDeleted(String language, List<String> tags);
 
     @Override
-    default void deleteById(@NotNull Long id) {
+    default void deleteById(Long id) {
         Optional<Snippet> snippet = findById(id);
         if (snippet.isPresent()) {
             Snippet foundSnippet = snippet.get();

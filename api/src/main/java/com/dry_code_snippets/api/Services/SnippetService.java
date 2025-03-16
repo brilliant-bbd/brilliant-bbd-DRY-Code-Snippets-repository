@@ -1,12 +1,7 @@
 package com.dry_code_snippets.api.Services;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
-
 import com.dry_code_snippets.DTO.SnippetDTO;
 import com.dry_code_snippets.api.Models.Language;
 import com.dry_code_snippets.api.Models.Snippet;
@@ -18,11 +13,11 @@ import com.dry_code_snippets.api.Repositories.UserRepository;
 import com.dry_code_snippets.api.Repositories.VersionRepository;
 
 import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class SnippetService {
@@ -123,7 +118,7 @@ public class SnippetService {
         }
     }
 
-    public void deleteSnippet(Long snippetId) {
+    public void deleteSnippet(@NotNull Long snippetId) {
         snippetRepository.deleteById(snippetId);
     }
 }
