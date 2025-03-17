@@ -17,8 +17,8 @@ public class VersionRepositoryTest {
 
     @Test
     public void testFindBySnippetId() {
-        Version version1 = new Version(1L, 1, "Code snippet v1");
-        Version version2 = new Version(1L, 2, "Code snippet v2");
+        Version version1 = new Version(1L, 1L, "Code snippet v1");
+        Version version2 = new Version(1L, 2L, "Code snippet v2");
         versionRepository.save(version1);
         versionRepository.save(version2);
 

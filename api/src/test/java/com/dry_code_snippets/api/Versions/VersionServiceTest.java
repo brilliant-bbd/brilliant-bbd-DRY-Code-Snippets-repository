@@ -27,8 +27,8 @@ public class VersionServiceTest {
 
     @BeforeEach
     void setUp() {
-        version1 = new Version(1L, 1, "Code snippet v1");
-        version2 = new Version(1L, 2, "Code snippet v2");
+        version1 = new Version(1L, 1L, "Code snippet v1");
+        version2 = new Version(1L, 2L, "Code snippet v2");
     }
 
     @Test

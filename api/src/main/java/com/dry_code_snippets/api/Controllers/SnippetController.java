@@ -26,11 +26,11 @@ public class SnippetController {
 
     // Get all snippets
     @GetMapping
-    public ResponseEntity<List<Snippet>> getAllSnippets(
+    public ResponseEntity<List<SnippetDTO>> getAllSnippets(
         @RequestParam(required = false) String tags, 
         @RequestParam(required = false) String language) {
 
-        List<Snippet> snippets = snippetService.getAllSnippets(tags, language);
+        List<SnippetDTO> snippets = snippetService.getAllSnippets(tags, language);
         
         if (snippets.isEmpty()) {
             return ResponseEntity.noContent().build();

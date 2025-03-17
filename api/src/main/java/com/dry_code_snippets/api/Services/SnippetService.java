@@ -48,22 +48,8 @@ public class SnippetService {
         this.snippetTagRepository = snippetTagRepository;
     }
 
-    public List<Snippet> getAllSnippets(String tag, String language) {
-        // if ((tag == null || tag.isEmpty()) && (language == null || language.isEmpty())) {
-        //     return snippetRepository.findAll(); 
-        // } else if (tag != null && !tag.isEmpty() && (language == null || language.isEmpty())) {
-           
-        //     List<String> tags = Arrays.asList(tag.split(";"));
-        //     return snippetRepository.findByTagsAndNotisDeleted(tags);
-        // } else if ((tag == null || tag.isEmpty()) && language != null && !language.isEmpty()) {
-           
-        //     return snippetRepository.findByLanguageAndNotisDeleted(language);
-        // } else {
-            
-        //     List<String> tags = Arrays.asList(tag.split(";"));
-        //     return snippetRepository.findByLanguageAndTagsAndNotisDeleted(language, tags);
-        // }
-        return snippetRepository.findByLanguageAndTagsAndNotisDeleted(language,List.of(tag.split(";")));
+    public List<SnippetDTO> getAllSnippets(String tag, String language) {
+        return snippetRepository.findSnippetsWithTagsAndRatings(language,List.of(tag.split(";")));
     }
 
     public Optional<Snippet> getSnippetById(Long snippetId) {

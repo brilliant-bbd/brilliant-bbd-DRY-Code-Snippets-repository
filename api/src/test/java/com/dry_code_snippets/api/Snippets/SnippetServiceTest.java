@@ -18,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -60,8 +61,8 @@ class SnippetServiceTest {
                 "Test Title",
                 "Test Description",
                 1);
-        snippetDTO = new SnippetDTO(2L, 1L, "some title", "some description", "java", LocalDateTime.now(),
-                "this is the code");
+        snippetDTO = new SnippetDTO(2, 1, "some title", "some description", "java", LocalDateTime.now().toString(),
+                "this is the code",BigDecimal.ONE,"tag,tag");
 
                   Optional<Language> language = Optional.of(new Language("java"));
         language.get().setLanguageId(1);
@@ -77,7 +78,7 @@ class SnippetServiceTest {
     void testGetAllSnippets() {
         when(snippetRepository.findAll()).thenReturn(List.of(snippet));
 
-        List<Snippet> snippets = snippetService.getAllSnippets(null, null);
+        List<SnippetDTO> snippets = snippetService.getAllSnippets(null, null);
 
         assertNotNull(snippets);
         assertEquals(1, snippets.size());
