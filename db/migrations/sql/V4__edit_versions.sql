@@ -4,10 +4,6 @@ DROP VIEW IF EXISTS view_snippet_by_id;
 DROP VIEW IF EXISTS view_snippet_versions_by_id;
 DROP VIEW IF EXISTS view_version_by_id;
 
--- Step 2: Alter versions table to change "version" to INT
-ALTER TABLE versions 
-ALTER COLUMN version TYPE INT USING version::INTEGER;
-
 -- Step 3: Modify procedures and ensure default version starts at 1
 
 -- Drop existing procedures before recreating them
