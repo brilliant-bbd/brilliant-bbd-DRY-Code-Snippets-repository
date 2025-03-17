@@ -46,8 +46,12 @@ public class RequestHandler {
     }
 
     private static String getResponse(HttpResponse<String> response) {
+
+        if (response.statusCode() >= 200 && response.statusCode() < 300) {
+            return response.body();
+        }
+
         return switch (response.statusCode()) {
-            case 200 -> response.body();
             case 400 -> "ERROR: Invalid Request";
             case 401 -> "ERROR: Unauthorized";
             case 404 -> "ERROR: Not Found";
