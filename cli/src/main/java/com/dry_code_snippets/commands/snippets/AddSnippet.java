@@ -3,9 +3,14 @@ package com.dry_code_snippets.commands.snippets;
 import com.dry_code_snippets.util.RequestHandler;
 import org.json.JSONObject;
 import picocli.CommandLine.Command;
+
+import java.net.http.HttpResponse;
+
 import static com.dry_code_snippets.util.InputHelper.multiLineInput;
 import static com.dry_code_snippets.util.InputHelper.singleLineInput;
+import static com.dry_code_snippets.util.OutputHelper.cliPrintError;
 import static com.dry_code_snippets.util.OutputHelper.debugPrint;
+import static com.dry_code_snippets.util.RequestHandler.checkValidResponse;
 
 @Command(name = "add-snippet", description = "Adds a new code snippet")
 public class AddSnippet implements Runnable {
@@ -24,7 +29,19 @@ public class AddSnippet implements Runnable {
         jsonBody.put("code", code);
 
         debugPrint("JSON BODY: " + jsonBody);
-        String response = RequestHandler.postRequest("/api/snippets", "", jsonBody.toString());
-        debugPrint("RESPONSE: " + response);
+        HttpResponse<String> response = RequestHandler.postRequest("/api/snippets", "", jsonBody.toString());
+        handleResponse(response);
     }
+
+    private void handleResponse(HttpResponse<String> response) {
+        debugPrint("RESPONSE: " + response);
+
+        if (response == null) {
+            cliPrintError("ERROR: request failed");
+        } else if (checkValidResponse(response)) {
+
+        }
+
+    }
+
 }
