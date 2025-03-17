@@ -4,37 +4,36 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "versions")
+@Table(name = "comments")
 @Getter
 @Setter
 @NoArgsConstructor
-public class Version {
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "versionId")
-    private Long versionId;
+    @Column(name = "commentId")
+    private Long commentId;
 
     @Column(name = "snippetId", nullable = false)
     private Long snippetId;
 
-    @Column(name = "versionNum", nullable = false)
-    private int versionNum;
+    @Column(name = "userId")
+    private Long userId;
 
-    @Column(name = "code", nullable = false)
-    private String code;
+    @Column(name = "comment", nullable = false)
+    private String comment;
 
     @Column(name = "createdAt")
     private LocalDateTime createdAt;
 
-    public Version(Long snippetId, int versionNum, String code) {
+    public Comment(Long snippetId, Long userId, String comment) {
         this.snippetId = snippetId;
-        this.versionNum = versionNum;
-        this.code = code;
+        this.userId = userId;
+        this.comment = comment;
         this.createdAt = LocalDateTime.now();
     }
-
-
 }
