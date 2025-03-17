@@ -3,7 +3,6 @@ package com.dry_code_snippets.api.Ratings;
 import com.dry_code_snippets.api.Models.Rating;
 import com.dry_code_snippets.api.Models.User;
 import com.dry_code_snippets.api.Repositories.RatingRepository;
-import com.dry_code_snippets.api.Repositories.SnippetRepository;
 import com.dry_code_snippets.api.Repositories.UserRepository;
 import com.dry_code_snippets.api.Services.RatingService;
 import com.dry_code_snippets.api.Shared.Shared;
