@@ -49,20 +49,21 @@ public class SnippetService {
     }
 
     public List<Snippet> getAllSnippets(String tag, String language) {
-        if ((tag == null || tag.isEmpty()) && (language == null || language.isEmpty())) {
-            return snippetRepository.findAll(); // No filters, return all
-        } else if (tag != null && !tag.isEmpty() && (language == null || language.isEmpty())) {
-            // Tag filter only
-            List<String> tags = Arrays.asList(tag.split(";"));
-            return snippetRepository.findByTagsAndNotisDeleted(tags);
-        } else if ((tag == null || tag.isEmpty()) && language != null && !language.isEmpty()) {
-            // Language filter only
-            return snippetRepository.findByLanguageAndNotisDeleted(language);
-        } else {
-            // Both tag and language filters
-            List<String> tags = Arrays.asList(tag.split(";"));
-            return snippetRepository.findByLanguageAndTagsAndNotisDeleted(language, tags);
-        }
+        // if ((tag == null || tag.isEmpty()) && (language == null || language.isEmpty())) {
+        //     return snippetRepository.findAll(); 
+        // } else if (tag != null && !tag.isEmpty() && (language == null || language.isEmpty())) {
+           
+        //     List<String> tags = Arrays.asList(tag.split(";"));
+        //     return snippetRepository.findByTagsAndNotisDeleted(tags);
+        // } else if ((tag == null || tag.isEmpty()) && language != null && !language.isEmpty()) {
+           
+        //     return snippetRepository.findByLanguageAndNotisDeleted(language);
+        // } else {
+            
+        //     List<String> tags = Arrays.asList(tag.split(";"));
+        //     return snippetRepository.findByLanguageAndTagsAndNotisDeleted(language, tags);
+        // }
+        return snippetRepository.findByLanguageAndTagsAndNotisDeleted(language,List.of(tag.split(";")));
     }
 
     public Optional<Snippet> getSnippetById(Long snippetId) {
@@ -87,7 +88,7 @@ public class SnippetService {
 
             snippetTagRepository.save(new SnippetTag(savedSnippet.getSnippetId(), tag.getTagId()));
 
-            Version version = new Version(savedSnippet.getSnippetId(), 1, snippetDTO.getCode());
+            Version version = new Version(savedSnippet.getSnippetId(), 1L, snippetDTO.getCode());
             versionRepository.save(version);
 
             return savedSnippet;
@@ -109,8 +110,8 @@ public class SnippetService {
             throw new IllegalArgumentException("You do not have permission to update this snippet");
         }
 
-        Version nextVersionNumber = versionRepository.findMaxVersionByVersionId(snippetId)
-                .orElse(new Version(snippetId, 0, newCode));
+        Version nextVersionNumber = versionRepository.findLatestVersionBySnippetId(snippetId)
+                .orElse(new Version(snippetId, 0L, newCode));
 
         Version version = new Version(existingSnippet.getSnippetId(), nextVersionNumber.getVersion() + 1, newCode);
         versionRepository.save(version);

@@ -14,7 +14,7 @@ public class VersionTest {
 
         assertNotNull(version);
         assertEquals(1L, version.getSnippetId());
-        assertEquals(5, version.getVersionNum());
+        assertEquals(5, version.getVersion());
         assertEquals("System.out.println(\"Hello World\");", version.getCode());
     }
 }

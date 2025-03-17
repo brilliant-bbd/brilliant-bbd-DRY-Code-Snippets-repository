@@ -45,7 +45,7 @@ class SnippetServiceTest {
     private UserService userService;
 
     @InjectMocks
-    private SnippetService snippetService; // SnippetService with injected mocks
+    private SnippetService snippetService;
 
     private SnippetDTO snippetDTO;
     private Snippet snippet;
@@ -63,11 +63,10 @@ class SnippetServiceTest {
         snippetDTO = new SnippetDTO(2L, 1L, "some title", "some description", "java", LocalDateTime.now(),
                 "this is the code");
 
-                  Language language = new Language("java");
-        language.setLanguageId(1);
-        language.setLanguageName("java");
-
-        when(languageRepository.findByLanguageName("java")).thenReturn(new Language("java"));
+                  Optional<Language> language = Optional.of(new Language("java"));
+        language.get().setLanguageId(1);
+        language.get().setLanguageName("java");
+        when(languageRepository.findByLanguageName("java")).thenReturn(java.util.Optional.of(new Language("java")));
         when(userService.getClaim()).thenReturn(UUID.fromString("123e4567-e89b-12d3-a456-426614174000")); 
 
         user = new User(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
@@ -102,11 +101,11 @@ class SnippetServiceTest {
 
 
 
-        when(languageRepository.findByLanguageName("java")).thenReturn(language);
+        when(languageRepository.findByLanguageName("java")).thenReturn(Optional.of(language));
 
         when(userService.getClaim()).thenReturn(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
 
-        when(userRepository.findByUserGuid(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))).thenReturn(user);
+        when(userRepository.findByUserGuid(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))).thenReturn(Optional.of(user));
 
         when(snippetRepository.save(any(Snippet.class))).thenReturn(snippet);
 
@@ -126,7 +125,7 @@ class SnippetServiceTest {
     void testUpdateSnippet() {
         when(snippetRepository.existsById(1L)).thenReturn(true);
         when(snippetRepository.save(any(Snippet.class))).thenReturn(snippet);
-        Snippet updatedSnippet = snippetService.updateSnippet(1L, snippetDTO);
+        Snippet updatedSnippet = snippetService.updateSnippet(1L, "code");
 
         assertNotNull(updatedSnippet);
         assertEquals("Test Title", updatedSnippet.getTitle());
@@ -138,7 +137,7 @@ class SnippetServiceTest {
     void testUpdateSnippetNotFound() {
         when(snippetRepository.existsById(1L)).thenReturn(false);
 
-        Snippet updatedSnippet = snippetService.updateSnippet(1L, snippetDTO);
+        Snippet updatedSnippet = snippetService.updateSnippet(1L, "code");
 
         assertNull(updatedSnippet);
         verify(snippetRepository, times(1)).existsById(1L);

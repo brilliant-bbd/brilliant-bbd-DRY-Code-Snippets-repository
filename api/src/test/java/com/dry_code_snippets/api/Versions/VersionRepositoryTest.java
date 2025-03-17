@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
+import java.util.Optional;
 
 @DataJpaTest
 public class VersionRepositoryTest {
@@ -21,10 +22,10 @@ public class VersionRepositoryTest {
         versionRepository.save(version1);
         versionRepository.save(version2);
 
-        List<Version> versions = versionRepository.findBySnippetId(1L);
+        Optional<List<Version>> versions = versionRepository.findBySnippetId(1L);
 
-        assertThat(versions).hasSize(2);
-        assertThat(versions.get(0).getVersionNum()).isEqualTo(1);
-        assertThat(versions.get(1).getVersionNum()).isEqualTo(2);
+        assertThat(versions.get()).hasSize(2);
+        assertThat(versions.get().get(0)).isEqualTo(1);
+        assertThat(versions.get().get(1)).isEqualTo(2);
     }
 }

@@ -33,7 +33,7 @@ public class VersionServiceTest {
 
     @Test
     public void testGetVersionsBySnippetId() {
-        when(versionRepository.findBySnippetId(1L)).thenReturn(List.of(version1, version2));
+        when(versionRepository.findBySnippetId(1L)).thenReturn(java.util.Optional.of(List.of(version1, version2)));
 
         List<Version> versions = versionService.getVersionsBySnippetId(1L);
 

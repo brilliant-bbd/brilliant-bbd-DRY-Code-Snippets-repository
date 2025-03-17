@@ -19,9 +19,10 @@ public class VersionService {
     }
 
     public Version createVersion(Long snippetId, String code) {
-        int versionNum=getNewVersionNum(snippetId)+1;
-        Version version=new Version(snippetId,versionNum,code);
-        return versionRepository.save(version);
+        Version version =  versionRepository.save(new Version(snippetId, 1L, code));
+
+        Long versionNum= (version.getVersionId()+1L);
+        return versionRepository.save(new Version(snippetId,versionNum,code));
     }
 
     public Version getVersionBySnippetIdAndVersionId( Long snippetId, Long versionId){
@@ -39,13 +40,5 @@ public class VersionService {
             throw new NoSuchElementException("No version found with ID: " + versionId + " for snippet ID: " + snippetId);
         }
         return versions.getFirst();
-    }
-
-    public int getNewVersionNum(Long snippetId){
-        var versionList = getVersionsBySnippetId(snippetId);
-        return versionList.stream()
-                .mapToInt(Version::getVersionNum)
-                .max()
-                .orElse(0);
     }
 }

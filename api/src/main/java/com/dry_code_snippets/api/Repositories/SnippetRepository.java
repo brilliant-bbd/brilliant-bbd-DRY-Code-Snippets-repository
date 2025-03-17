@@ -26,5 +26,11 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
             save(foundSnippet);
         }
     }
+
+    // List<Snippet> findByTagsLanguageAll();
+
+    // List<Snippet> findByTagsAndNotisDeleted(List<String> tags);
+
+    // List<Snippet> findByLanguageAndNotisDeleted(String languageId);
 }
 
