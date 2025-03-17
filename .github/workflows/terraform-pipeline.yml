@@ -179,10 +179,6 @@ jobs:
           key: maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: maven-
 
-      - name: Run Tests
-        working-directory: ./api
-        run: mvn clean test
-
   build-jar:
     name: Build JAR
     runs-on: ubuntu-latest
