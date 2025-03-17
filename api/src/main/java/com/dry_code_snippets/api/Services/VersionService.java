@@ -5,6 +5,7 @@ import com.dry_code_snippets.api.Repositories.VersionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -14,7 +15,7 @@ public class VersionService {
     private VersionRepository versionRepository;
 
     public List<Version> getVersionsBySnippetId(Long snippetId) {
-        return versionRepository.findBySnippetId(snippetId);
+        return versionRepository.findBySnippetId(snippetId).orElse(Collections.emptyList());
     }
 
     public Version createVersion(Long snippetId, String code) {

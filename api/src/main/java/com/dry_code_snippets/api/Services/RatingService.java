@@ -24,7 +24,7 @@ public class RatingService {
     }
 
     public Rating addRating(Long snippetId, Integer ratingNum) {
-        User user = userRepository.findByUserGuid(Shared.getClaim());
+        User user = userRepository.findByUserGuid(Shared.getClaim()).orElseThrow();
         Rating rating= new Rating(snippetId,user.getUserId(),ratingNum);
         return ratingRepository.save(rating);
     }

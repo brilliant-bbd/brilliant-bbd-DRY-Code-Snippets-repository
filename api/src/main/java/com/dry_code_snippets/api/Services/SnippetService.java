@@ -1,14 +1,19 @@
 package com.dry_code_snippets.api.Services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import com.dry_code_snippets.DTO.SnippetDTO;
 import com.dry_code_snippets.api.Models.Language;
 import com.dry_code_snippets.api.Models.Snippet;
+import com.dry_code_snippets.api.Models.SnippetTag;
+import com.dry_code_snippets.api.Models.Tag;
 import com.dry_code_snippets.api.Models.User;
 import com.dry_code_snippets.api.Models.Version;
 import com.dry_code_snippets.api.Repositories.LanguageRepository;
 import com.dry_code_snippets.api.Repositories.SnippetRepository;
+import com.dry_code_snippets.api.Repositories.SnippetTagRepository;
+import com.dry_code_snippets.api.Repositories.TagRepository;
 import com.dry_code_snippets.api.Repositories.UserRepository;
 import com.dry_code_snippets.api.Repositories.VersionRepository;
 
@@ -27,25 +32,37 @@ public class SnippetService {
     private final VersionRepository versionRepository;
     private final LanguageRepository languageRepository;
     private final UserService userService;
+    private final TagRepository tagRepository;
+    private final SnippetTagRepository snippetTagRepository;
+
     @Autowired
     public SnippetService(SnippetRepository snippetRepository, UserRepository userRepository,
             VersionRepository versionRepository, LanguageRepository languageRepository,
-            UserService userService) {
+            UserService userService, TagRepository tagRepository, SnippetTagRepository snippetTagRepository) {
         this.snippetRepository = snippetRepository;
         this.userRepository = userRepository;
         this.versionRepository = versionRepository;
         this.languageRepository = languageRepository;
-        this.userService=userService;
+        this.userService = userService;
+        this.tagRepository = tagRepository;
+        this.snippetTagRepository = snippetTagRepository;
     }
 
-    
-
     public List<Snippet> getAllSnippets(String tag, String language) {
-        if (tag != null && !tag.isEmpty() && language != null && !language.isEmpty()) {
+        if ((tag == null || tag.isEmpty()) && (language == null || language.isEmpty())) {
+            return snippetRepository.findAll(); // No filters, return all
+        } else if (tag != null && !tag.isEmpty() && (language == null || language.isEmpty())) {
+            // Tag filter only
             List<String> tags = Arrays.asList(tag.split(";"));
-            return snippetRepository.findByLanguageAndTagsAndNotisDeleted(language,tags);
+            return snippetRepository.findByTagsAndNotisDeleted(tags);
+        } else if ((tag == null || tag.isEmpty()) && language != null && !language.isEmpty()) {
+            // Language filter only
+            return snippetRepository.findByLanguageAndNotisDeleted(language);
+        } else {
+            // Both tag and language filters
+            List<String> tags = Arrays.asList(tag.split(";"));
+            return snippetRepository.findByLanguageAndTagsAndNotisDeleted(language, tags);
         }
-        return snippetRepository.findAll();
     }
 
     public Optional<Snippet> getSnippetById(Long snippetId) {
@@ -54,68 +71,51 @@ public class SnippetService {
 
     @Transactional
     public Snippet createSnippet(SnippetDTO snippetDTO) {
-        Language language = languageRepository.findByLanguageName(snippetDTO.getLanguage());
-        if (language == null) {
-            throw new IllegalArgumentException("Language not found");
+        try {
+            Language language = languageRepository.findByLanguageName(snippetDTO.getLanguage())
+                    .orElseGet(() -> languageRepository.save(new Language(snippetDTO.getLanguage())));
+
+            User user = userRepository.findByUserGuid(userService.getClaim())
+                    .orElseGet(() -> userRepository.save(new User(userService.getClaim())));
+
+            Tag tag = new Tag(snippetDTO.getTitle());
+            tag = tagRepository.save(tag);
+
+            Snippet snippet = new Snippet(user.getUserId(), snippetDTO.getTitle(), snippetDTO.getDescription(),
+                    language.getLanguageId());
+            Snippet savedSnippet = snippetRepository.save(snippet);
+
+            snippetTagRepository.save(new SnippetTag(savedSnippet.getSnippetId(), tag.getTagId()));
+
+            Version version = new Version(savedSnippet.getSnippetId(), 1, snippetDTO.getCode());
+            versionRepository.save(version);
+
+            return savedSnippet;
+        } catch (DataAccessException e) {
+            System.err.println("Error creating snippet: " + e.getMessage());
+            throw new RuntimeException("Failed to create snippet", e);
         }
-
-        User user = userRepository.findByUserGuid(userService.getClaim());
-        if (user == null) {
-            user = new User(userService.getClaim());
-            user = userRepository.save(user);
-        }
-
-        Snippet snippet = new Snippet(user.getUserId(), snippetDTO.getTitle(), snippetDTO.getDescription(),
-                language.getLanguageId());
-        Snippet savedSnippet = snippetRepository.save(snippet);
-
-        Version version = new Version(savedSnippet.getSnippetId(), 1, snippetDTO.getCode());
-        versionRepository.save(version);
-
-        return savedSnippet;
     }
 
     @Transactional
-    public Snippet updateSnippet(Long snippetId, SnippetDTO snippetDTO) {
-    Snippet existingSnippet = snippetRepository.findById(snippetId).orElse(null);
-    
-    if (existingSnippet == null) {
-        throw new IllegalArgumentException("Snippet not found");
-    }
+    public Snippet updateSnippet(Long snippetId, String newCode) {
+        Snippet existingSnippet = snippetRepository.findById(snippetId)
+                .orElseThrow(() -> new IllegalArgumentException("Snippet not found"));
 
-    User user = userRepository.findByUserGuid(userService.getClaim());
+        User user = userRepository.findByUserGuid(userService.getClaim())
+                .orElseThrow(() -> new IllegalStateException("User not found"));
 
-    if (user == null) {
-        throw new IllegalStateException("User not found");
-    }
-
-    if (!existingSnippet.getUserId().equals(user.getUserId())) {
-        throw new IllegalArgumentException("You do not have permission to update this snippet");
-    }
-
-    int nextVersionNumber = getNextVersionNumber(snippetId);
-    
-    Language language = languageRepository.findByLanguageName(snippetDTO.getLanguage());
-    if (language == null) {
-        throw new IllegalArgumentException("Language not found");
-    }
-
-    Version version = new Version(existingSnippet.getSnippetId(), 
-                                  nextVersionNumber, 
-                                  snippetDTO.getCode());
-    versionRepository.save(version);
-
-    return existingSnippet;
-}
-
-    public int getNextVersionNumber(Long snippetId) {
-        List<Version> versions = versionRepository.findBySnippetId(snippetId);
-    
-        if (versions != null && !versions.isEmpty()) {
-            return versions.size() + 1; 
-        } else {
-            return 1;
+        if (!existingSnippet.getUserId().equals(user.getUserId())) {
+            throw new IllegalArgumentException("You do not have permission to update this snippet");
         }
+
+        Version nextVersionNumber = versionRepository.findMaxVersionByVersionId(snippetId)
+                .orElse(new Version(snippetId, 0, newCode));
+
+        Version version = new Version(existingSnippet.getSnippetId(), nextVersionNumber.getVersion() + 1, newCode);
+        versionRepository.save(version);
+
+        return existingSnippet;
     }
 
     public void deleteSnippet(@NotNull Long snippetId) {

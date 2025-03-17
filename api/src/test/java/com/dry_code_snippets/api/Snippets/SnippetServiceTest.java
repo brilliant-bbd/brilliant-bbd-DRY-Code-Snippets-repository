@@ -1,9 +1,16 @@
 package com.dry_code_snippets.api.Snippets;
 
 import com.dry_code_snippets.DTO.SnippetDTO;
+import com.dry_code_snippets.api.Models.Language;
 import com.dry_code_snippets.api.Models.Snippet;
+import com.dry_code_snippets.api.Models.User;
+import com.dry_code_snippets.api.Models.Version;
+import com.dry_code_snippets.api.Repositories.LanguageRepository;
 import com.dry_code_snippets.api.Repositories.SnippetRepository;
+import com.dry_code_snippets.api.Repositories.UserRepository;
+import com.dry_code_snippets.api.Repositories.VersionRepository;
 import com.dry_code_snippets.api.Services.SnippetService;
+import com.dry_code_snippets.api.Services.UserService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +21,7 @@ import org.mockito.MockitoAnnotations;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -21,15 +29,28 @@ import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SnippetServiceTest {
-
-    @Mock
+ @Mock
     private SnippetRepository snippetRepository;
 
-    @InjectMocks
-    private SnippetService snippetService;
+    @Mock
+    private LanguageRepository languageRepository;
 
-    private Snippet snippet;
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private VersionRepository versionRepository;
+
+    @Mock
+    private UserService userService;
+
+    @InjectMocks
+    private SnippetService snippetService; // SnippetService with injected mocks
+
     private SnippetDTO snippetDTO;
+    private Snippet snippet;
+    private Language language;
+    private User user;
 
     @BeforeEach
     void setUp() {
@@ -41,6 +62,16 @@ class SnippetServiceTest {
                 1);
         snippetDTO = new SnippetDTO(2L, 1L, "some title", "some description", "java", LocalDateTime.now(),
                 "this is the code");
+
+                  Language language = new Language("java");
+        language.setLanguageId(1);
+        language.setLanguageName("java");
+
+        when(languageRepository.findByLanguageName("java")).thenReturn(new Language("java"));
+        when(userService.getClaim()).thenReturn(UUID.fromString("123e4567-e89b-12d3-a456-426614174000")); 
+
+        user = new User(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        user.setUserId(1L);
     }
 
     @Test
@@ -68,14 +99,27 @@ class SnippetServiceTest {
 
     @Test
     void testCreateSnippet() {
+
+
+
+        when(languageRepository.findByLanguageName("java")).thenReturn(language);
+
+        when(userService.getClaim()).thenReturn(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+
+        when(userRepository.findByUserGuid(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))).thenReturn(user);
+
         when(snippetRepository.save(any(Snippet.class))).thenReturn(snippet);
-        SnippetDTO snippetDTO = new SnippetDTO(2L, 1L, "some title", "some description", "java", LocalDateTime.now(),
-                "this is the code");
+
         Snippet createdSnippet = snippetService.createSnippet(snippetDTO);
 
         assertNotNull(createdSnippet);
-        assertEquals("Test Title", createdSnippet.getTitle());
-        verify(snippetRepository, times(1)).save(snippet);
+        assertEquals("Test Title", createdSnippet.getTitle()); 
+
+        verify(languageRepository, times(1)).findByLanguageName("java");
+        verify(userService, times(1)).getClaim();
+        verify(userRepository, times(1)).findByUserGuid(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        verify(snippetRepository, times(1)).save(any(Snippet.class));
+        verify(versionRepository, times(1)).save(any(Version.class));
     }
 
     @Test

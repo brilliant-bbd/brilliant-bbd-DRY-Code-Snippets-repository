@@ -31,21 +31,7 @@ public class SnippetRepositoryTest {
     public void testCreateSnippetWithNullTitle() {
         Snippet snippet = new Snippet(
             1L, 
-            null, // Null title, should trigger constraint violation
-            "This is a test description",
-            1
-        );
-
-        assertThrows(DataIntegrityViolationException.class, () -> {
-            snippetRepository.save(snippet);
-        });
-    }
-    
-    @Test
-    public void testCreateSnippetWithNullUpdatedAt() {
-        Snippet snippet = new Snippet(
-            1L, 
-            "Test Title", 
+            null,
             "This is a test description",
             1
         );

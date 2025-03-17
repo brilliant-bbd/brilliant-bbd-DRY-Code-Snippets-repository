@@ -9,9 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import com.dry_code_snippets.api.Models.Snippet;
 
-import jakarta.validation.constraints.NotNull;
-
-
 @Repository
 public interface SnippetRepository extends JpaRepository<Snippet, Long> {
 
