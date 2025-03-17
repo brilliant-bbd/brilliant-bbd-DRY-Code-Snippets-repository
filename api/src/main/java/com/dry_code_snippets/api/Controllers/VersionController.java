@@ -19,7 +19,7 @@ public class VersionController {
         return ResponseEntity.ok(versionService.getVersionsBySnippetId(snippetId));
     }
 
-    @GetMapping
+    @GetMapping("/byVersion")
     public ResponseEntity<Version> getVersionBySnippetIdAndVersionId(@RequestParam("snippetId") Long snippetId, @RequestParam("versionId") Long versionId) {
         return ResponseEntity.ok(versionService.getVersionBySnippetIdAndVersionId(snippetId,versionId));
     }
