@@ -65,6 +65,7 @@ jobs:
           flyway.locations=filesystem:./sql
           flyway.baselineOnMigrate=true
           flyway.schemas=public
+          flyway.cleanDisabled=true
           EOF
           chmod 600 flyway.conf
           
