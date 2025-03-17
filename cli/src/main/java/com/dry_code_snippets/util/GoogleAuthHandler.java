@@ -12,21 +12,22 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.dry_code_snippets.util.EnvLoader.getClientId;
+import static com.dry_code_snippets.util.EnvLoader.getClientSecret;
 import static com.dry_code_snippets.util.OutputHelper.cliPrint;
 import static com.dry_code_snippets.util.OutputHelper.debugPrint;
 
 public class GoogleAuthHandler {
-    ;
-    private static String CLIENT_ID;
-    private static String CLIENT_SECRET;
+    private static final String CLIENT_ID = getClientId();
+    private static final String CLIENT_SECRET = getClientSecret();
     private static final String REDIRECT_URI = "http://localhost:9090/callback";
-
     public static String jwtToken = "";
 
+    public static String getJwt() {
+        return jwtToken;
+    }
+
     public static void Authenticate() throws IOException, URISyntaxException {
-        Dotenv dotenv = Dotenv.load();
-        CLIENT_ID = dotenv.get("GOOGLE_CLIENT_ID");
-        CLIENT_SECRET = dotenv.get("GOOGLE_CLIENT_SECRET");
         String authUrl = "https://accounts.google.com/o/oauth2/auth?client_id=" + CLIENT_ID +
                 "&redirect_uri=" + URLEncoder.encode(REDIRECT_URI, StandardCharsets.UTF_8) + "&response_type=code" +
                 "&scope=" + URLEncoder.encode("openid email profile", StandardCharsets.UTF_8) + "&access_type=offline";
@@ -53,7 +54,8 @@ public class GoogleAuthHandler {
                         if (jwtToken == null) {
                             output = "ERROR: Login unsuccessful. Try again";
                         } else {
-                            output = "Login successful.";
+                            output = RequestHandler.getRequest("/api/login", "");
+                            debugPrint("RESPONSE: " + output);
                             debugPrint("JWT: " + jwtToken);
                         }
                     } else {

@@ -13,18 +13,18 @@ public class AddSnippet implements Runnable {
         String title = singleLineInput("Enter a title", 256, false, false);
         String codingLanguage = singleLineInput("Enter the coding language used", 256, false, false);
         String tags = multiLineInput("Enter the tags (each tag on its own line)", 2048, false);
-        String description = multiLineInput("Enter a description", 2048, false);
-        String code = multiLineInput("Enter the code", 4096, false);
+        String description = multiLineInput("Enter a description", 1000, false);
+        String code = multiLineInput("Enter the code", 10000, false);
 
         JSONObject jsonBody = new JSONObject();
         jsonBody.put("title", title);
-        jsonBody.put("coding_language", codingLanguage);
+        jsonBody.put("language", codingLanguage);
         jsonBody.put("tags", tags.split("\n"));
         jsonBody.put("description", description);
         jsonBody.put("code", code);
 
         debugPrint("JSON BODY: " + jsonBody);
-        String response = RequestHandler.postRequest("/snippets", "", jsonBody.toString());
+        String response = RequestHandler.postRequest("/api/snippets", "", jsonBody.toString());
         debugPrint("RESPONSE: " + response);
     }
 }

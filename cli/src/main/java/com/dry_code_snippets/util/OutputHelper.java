@@ -2,9 +2,9 @@ package com.dry_code_snippets.util;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
-public class OutputHelper {
+import static com.dry_code_snippets.util.EnvLoader.getDebug;
 
-    private static final boolean DEBUG_MODE = Dotenv.load().get("DEBUG").equalsIgnoreCase("TRUE");
+public class OutputHelper {
 
     public static void cliPrint(String text) {
         if (text.startsWith("ERROR: ")) {
@@ -17,7 +17,7 @@ public class OutputHelper {
         System.out.print("\r > ");
     }
 
-    private static void cliPrintError(String text) {
+    public static void cliPrintError(String text) {
         changeTextRed();
         System.out.println("\r" + text);
         changeTextGreen();
@@ -25,7 +25,7 @@ public class OutputHelper {
     }
 
     public static void debugPrint(String text) {
-        if (DEBUG_MODE) {
+        if (getDebug()) {
             changeTextBlue();
             System.out.println("\r" + text);
             changeTextGreen();

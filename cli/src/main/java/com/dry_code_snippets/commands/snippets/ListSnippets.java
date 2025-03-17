@@ -13,11 +13,10 @@ public class ListSnippets implements Runnable {
         String tags = multiLineInput("(Optional) Enter tags to filter by (each tag on its own line)", 2048, true);
         String codingLanguage = singleLineInput("(Optional) Enter the coding language to filter by", 256, true, false);
 
-        String queryParams = "";
-        queryParams = addQueryParam(queryParams, "tags", tags.replaceAll("\n", ";"));
-        queryParams = addQueryParam(queryParams, "coding_language", codingLanguage);
+        String queryParams = addQueryParam("", "tags", tags.replaceAll("\n", ";"));
+        queryParams = addQueryParam(queryParams, "language", codingLanguage);
 
-        String response = RequestHandler.getRequest("/snippets", queryParams);
+        String response = RequestHandler.getRequest("/api/snippets", queryParams);
         debugPrint("RESPONSE: " + response);
     }
 }
