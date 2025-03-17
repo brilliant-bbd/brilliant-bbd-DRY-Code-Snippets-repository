@@ -71,6 +71,6 @@ module "elastic_beanstalk" {
   # Additional environment variables
   environment_variables = {
     APP_ENV       = var.environment
-    FLYWAY_DB_URL = "jdbc:postgresql://${module.database.db_instance_endpoint}:5432/${var.db_name}"
+    FLYWAY_DB_URL = "jdbc:postgresql://${module.database.db_instance_endpoint}/${var.db_name}"
   }
 }
