@@ -55,7 +55,7 @@ public class SnippetController {
 
     // Update a snippet
     @PutMapping("/{id}")
-    public ResponseEntity<Snippet> updateSnippet(@PathVariable("id") Long id, @RequestBody SnippetDTO snippet) {
+    public ResponseEntity<Snippet> updateSnippet(@PathVariable("id") Long id, @RequestBody String snippet) {
         Snippet updatedSnippet = snippetService.updateSnippet(id, snippet);
         return updatedSnippet != null ? ResponseEntity.ok(updatedSnippet) : ResponseEntity.badRequest().build();
     }
