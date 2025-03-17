@@ -8,7 +8,7 @@ terraform {
     bucket       = "dry-code-snippets-bucket"
     key          = "prod/terraform.tfstate"
     region       = "af-south-1"
-    use_lockfile = "terraform-state-locks"
+    use_lockfile = true
     encrypt      = true
   }
 }
@@ -69,6 +69,6 @@ module "elastic_beanstalk" {
   # Additional environment variables
   environment_variables = {
     APP_ENV       = var.environment
-    FLYWAY_DB_URL = "jdbc:postgresql://${module.database.db_instance_endpoint}:5432/${var.db_name}"
+    FLYWAY_DB_URL = "jdbc:postgresql://${module.database.db_instance_endpoint}/${var.db_name}"
   }
 }
