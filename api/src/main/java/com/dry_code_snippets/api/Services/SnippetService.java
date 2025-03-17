@@ -69,7 +69,7 @@ public class SnippetService {
                 language.getLanguageId());
         Snippet savedSnippet = snippetRepository.save(snippet);
 
-        Version version = new Version(savedSnippet.getSnippetId(), "version 1", snippetDTO.getCode());
+        Version version = new Version(savedSnippet.getSnippetId(), 1, snippetDTO.getCode());
         versionRepository.save(version);
 
         return savedSnippet;
@@ -101,7 +101,7 @@ public class SnippetService {
     }
 
     Version version = new Version(existingSnippet.getSnippetId(), 
-                                  "version " + nextVersionNumber, 
+                                  nextVersionNumber, 
                                   snippetDTO.getCode());
     versionRepository.save(version);
 
