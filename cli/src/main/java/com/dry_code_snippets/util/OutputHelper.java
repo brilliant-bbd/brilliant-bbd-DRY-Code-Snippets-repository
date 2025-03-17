@@ -1,7 +1,5 @@
 package com.dry_code_snippets.util;
 
-import io.github.cdimascio.dotenv.Dotenv;
-
 import static com.dry_code_snippets.util.EnvLoader.getDebug;
 
 public class OutputHelper {
@@ -31,6 +29,14 @@ public class OutputHelper {
             changeTextGreen();
             System.out.print("\r > ");
         }
+    }
+
+    public static void printWrapperTop(String header) {
+        cliPrint("----------------------------------------\n" + header + ": \n");
+    }
+
+    public static void printWrapperBottom() {
+        cliPrint("----------------------------------------");
     }
 
     public static void changeTextGreen() {

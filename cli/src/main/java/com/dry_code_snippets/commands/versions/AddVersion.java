@@ -22,10 +22,8 @@ public class AddVersion implements Runnable {
         JSONObject jsonBody = new JSONObject();
         jsonBody.put("code", code);
 
-        String queryParams = addQueryParam("", "snippetId", snippetId);
-
         debugPrint("JSON BODY: " + jsonBody);
-        HttpResponse<String> response = RequestHandler.postRequest("/api/snippets/version", queryParams, jsonBody.toString());
+        HttpResponse<String> response = RequestHandler.putRequest("/api/snippets/" + snippetId, "", jsonBody.toString());
         handleResponse(response);
     }
 
@@ -35,7 +33,7 @@ public class AddVersion implements Runnable {
         if (response == null) {
             cliPrintError("ERROR: request failed");
         } else if (checkValidResponse(response)) {
-
+            debugPrint(response.body());
         }
 
     }

@@ -25,7 +25,7 @@ public class GetSnippet implements Runnable {
         if (response == null) {
             cliPrintError("ERROR: request failed");
         } else if (checkValidResponse(response)) {
-
+            debugPrint(response.body());
         }
 
     }

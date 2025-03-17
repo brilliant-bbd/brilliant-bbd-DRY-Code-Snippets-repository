@@ -6,8 +6,7 @@ import picocli.CommandLine.Command;
 import java.net.http.HttpResponse;
 
 import static com.dry_code_snippets.util.InputHelper.singleLineInput;
-import static com.dry_code_snippets.util.OutputHelper.cliPrintError;
-import static com.dry_code_snippets.util.OutputHelper.debugPrint;
+import static com.dry_code_snippets.util.OutputHelper.*;
 import static com.dry_code_snippets.util.RequestHandler.checkValidResponse;
 
 @Command(name = "delete-snippet", description = "Delete a snippet")
@@ -25,7 +24,10 @@ public class DeleteSnippet implements Runnable {
         if (response == null) {
             cliPrintError("ERROR: request failed");
         } else if (checkValidResponse(response)) {
-
+            debugPrint(response.body());
+            if (response.statusCode() == 204) {
+                cliPrint("Snippet deleted successfully");
+            }
         }
 
     }

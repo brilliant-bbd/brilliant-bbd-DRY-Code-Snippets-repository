@@ -8,8 +8,7 @@ import java.net.http.HttpResponse;
 
 import static com.dry_code_snippets.util.InputHelper.multiLineInput;
 import static com.dry_code_snippets.util.InputHelper.singleLineInput;
-import static com.dry_code_snippets.util.OutputHelper.cliPrintError;
-import static com.dry_code_snippets.util.OutputHelper.debugPrint;
+import static com.dry_code_snippets.util.OutputHelper.*;
 import static com.dry_code_snippets.util.RequestHandler.addQueryParam;
 import static com.dry_code_snippets.util.RequestHandler.checkValidResponse;
 
@@ -35,7 +34,10 @@ public class AddComment implements Runnable {
         if (response == null) {
             cliPrintError("ERROR: request failed");
         } else if (checkValidResponse(response)) {
-
+            debugPrint(response.body());
+            if (response.statusCode() == 201) {
+                cliPrint("Comment added successfully");
+            }
         }
 
     }

@@ -7,8 +7,7 @@ import picocli.CommandLine.Command;
 import java.net.http.HttpResponse;
 
 import static com.dry_code_snippets.util.InputHelper.singleLineInput;
-import static com.dry_code_snippets.util.OutputHelper.cliPrintError;
-import static com.dry_code_snippets.util.OutputHelper.debugPrint;
+import static com.dry_code_snippets.util.OutputHelper.*;
 import static com.dry_code_snippets.util.RequestHandler.addQueryParam;
 import static com.dry_code_snippets.util.RequestHandler.checkValidResponse;
 
@@ -18,13 +17,10 @@ public class AddRating implements Runnable {
         String snippetId = singleLineInput("Enter the id of the snippet you want to rate ", 19, false, true);
         String rating = getValidRating();
 
-        JSONObject jsonBody = new JSONObject();
-        jsonBody.put("rating", rating);
-
         String queryParams = addQueryParam("", "snippetId", snippetId);
 
-        debugPrint("JSON BODY: " + jsonBody);
-        HttpResponse<String> response = RequestHandler.postRequest("/api/snippets/rating", queryParams, jsonBody.toString());
+        debugPrint("Rating: " + rating);
+        HttpResponse<String> response = RequestHandler.postRequest("/api/snippets/ratings", queryParams, rating);
         handleResponse(response);
     }
 
@@ -51,7 +47,10 @@ public class AddRating implements Runnable {
         if (response == null) {
             cliPrintError("ERROR: request failed");
         } else if (checkValidResponse(response)) {
-
+            debugPrint(response.body());
+            if (response.statusCode() == 201) {
+                cliPrint("Rating added successfully");
+            }
         }
 
     }
