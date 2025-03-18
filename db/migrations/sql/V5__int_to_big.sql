@@ -1,4 +1,18 @@
 
+DROP VIEW IF EXISTS view_snippets CASCADE;
+DROP VIEW IF EXISTS view_snippet_by_id CASCADE;
+DROP VIEW IF EXISTS view_snippet_versions_by_id CASCADE;
+DROP VIEW IF EXISTS view_version_by_id CASCADE;
+DROP VIEW IF EXISTS view_comments_by_snippet CASCADE;
+
+DROP PROCEDURE IF EXISTS create_snippet;
+DROP PROCEDURE IF EXISTS add_version;
+DROP PROCEDURE IF EXISTS rate_snippet;
+DROP PROCEDURE IF EXISTS add_comment;
+DROP PROCEDURE IF EXISTS add_snippet_tag;
+DROP PROCEDURE IF EXISTS soft_delete_snippet;
+
+
 ALTER TABLE users ALTER COLUMN user_id SET DATA TYPE BIGINT;
 ALTER TABLE snippets ALTER COLUMN snippet_id SET DATA TYPE BIGINT;
 ALTER TABLE snippets ALTER COLUMN user_id SET DATA TYPE BIGINT;
