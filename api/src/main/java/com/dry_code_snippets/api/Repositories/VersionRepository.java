@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface VersionRepository extends JpaRepository<Version, Long> {
     Optional<List<Version>> findBySnippetId(Long snippetId);
 
-    @Query(value = "SELECT v.* FROM versions WHERE snippetId = :snippetId ORDER BY createdAt DESC LIMIT 1", nativeQuery = true)
+    @Query(value = "SELECT v.* FROM versions v WHERE v.snippet_id = :snippetId ORDER BY v.created_at DESC LIMIT 1", nativeQuery = true)
     Optional<Version> findLatestVersionBySnippetId(@Param("snippetId") Long snippetId);
 
 }
