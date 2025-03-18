@@ -8,6 +8,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import static com.dry_code_snippets.util.EnvLoader.getApiBaseUrl;
 import static com.dry_code_snippets.util.GoogleAuthHandler.getJwt;
+import static com.dry_code_snippets.util.OutputHelper.cliPrintError;
 import static com.dry_code_snippets.util.OutputHelper.debugPrint;
 
 public class RequestHandler {
@@ -45,21 +46,20 @@ public class RequestHandler {
         return queryParams + "&" + encodedParam;
     }
 
-    private static String getResponse(HttpResponse<String> response) {
-
-        if (response.statusCode() >= 200 && response.statusCode() < 300) {
-            return response.body();
+    public static boolean checkValidResponse(HttpResponse<String> response) {
+        if (response.statusCode() >= 400 && response.statusCode() < 600 ) {
+            switch (response.statusCode()) {
+                case 400 -> cliPrintError("ERROR: 400 Invalid Request");
+                case 401 -> cliPrintError("ERROR: 401 Unauthorized");
+                case 404 -> cliPrintError("ERROR: 404 Not Found");
+                default -> cliPrintError("ERROR: Request Failed");
+            };
+            return false;
         }
-
-        return switch (response.statusCode()) {
-            case 400 -> "ERROR: Invalid Request";
-            case 401 -> "ERROR: Unauthorized";
-            case 404 -> "ERROR: Not Found";
-            default -> "ERROR: Request Failed";
-        };
+        return true;
     }
 
-    public static String getRequest(String path, String queryParams) {
+    public static HttpResponse<String> getRequest(String path, String queryParams) {
         debugPrint("GET REQUEST");
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -68,15 +68,14 @@ public class RequestHandler {
                     .GET()
                     .build();
 
-            HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-            return getResponse(response);
+            return CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
         } catch (Exception e) {
-            return "ERROR: Request Failed";
+            return null;
         }
     }
 
-    public static String postRequest(String path, String queryParams, String body) {
+    public static HttpResponse<String> postRequest(String path, String queryParams, String body) {
         debugPrint("POST REQUEST");
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -86,15 +85,14 @@ public class RequestHandler {
                     .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
                     .build();
 
-            HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-            return getResponse(response);
+            return CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
         } catch (Exception e) {
-            return "ERROR: Request Failed";
+            return null;
         }
     }
 
-    public static String putRequest(String path, String queryParams, String body) {
+    public static HttpResponse<String> putRequest(String path, String queryParams, String body) {
         debugPrint("PUT REQUEST");
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -104,15 +102,14 @@ public class RequestHandler {
                     .PUT(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
                     .build();
 
-            HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-            return getResponse(response);
+            return CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
         } catch (Exception e) {
-            return "ERROR: Request Failed";
+            return null;
         }
     }
 
-    public static String deleteRequest(String path, String queryParams) {
+    public static HttpResponse<String> deleteRequest(String path, String queryParams) {
         debugPrint("DELETE REQUEST");
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -121,11 +118,10 @@ public class RequestHandler {
                     .DELETE()
                     .build();
 
-            HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-            return getResponse(response);
+            return CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
         } catch (Exception e) {
-            return "ERROR: Request Failed";
+            return null;
         }
     }
 }
