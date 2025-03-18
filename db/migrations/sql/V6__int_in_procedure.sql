@@ -62,7 +62,7 @@ SELECT
     snippet_id,
     comment,
     created_at
-FROM comments
+FROM comments;
 
 
 
