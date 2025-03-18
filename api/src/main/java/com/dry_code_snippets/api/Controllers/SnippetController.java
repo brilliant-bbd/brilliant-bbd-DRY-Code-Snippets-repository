@@ -26,11 +26,11 @@ public class SnippetController {
 
     // Get all snippets
     @GetMapping
-    public ResponseEntity<List<Snippet>> getAllSnippets(
+    public ResponseEntity<List<SnippetDTO>> getAllSnippets(
         @RequestParam(required = false) String tags, 
         @RequestParam(required = false) String language) {
-
-        List<Snippet> snippets = snippetService.getAllSnippets(tags, language);
+        
+        List<SnippetDTO> snippets = snippetService.getAllSnippets(Optional.of(tags), Optional.of(language));
         
         if (snippets.isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -40,9 +40,9 @@ public class SnippetController {
     }
 
     // Get a snippet by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Snippet> getSnippetById(@PathVariable("id") Long id) {
-        Optional<Snippet> snippet = snippetService.getSnippetById(id);
+    @GetMapping("/{snippetId}")
+    public ResponseEntity<SnippetDTO> getSnippetById(@PathVariable("snippetId") Long snippetId) {
+        Optional<SnippetDTO> snippet = Optional.of(snippetService.getSnippetById(snippetId));
         return snippet.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -55,7 +55,7 @@ public class SnippetController {
 
     // Update a snippet
     @PutMapping("/{id}")
-    public ResponseEntity<Snippet> updateSnippet(@PathVariable("id") Long id, @RequestBody SnippetDTO snippet) {
+    public ResponseEntity<Snippet> updateSnippet(@PathVariable("id") Long id, @RequestBody String snippet) {
         Snippet updatedSnippet = snippetService.updateSnippet(id, snippet);
         return updatedSnippet != null ? ResponseEntity.ok(updatedSnippet) : ResponseEntity.badRequest().build();
     }

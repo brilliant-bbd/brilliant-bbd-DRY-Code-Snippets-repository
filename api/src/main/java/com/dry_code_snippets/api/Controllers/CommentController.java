@@ -2,6 +2,8 @@ package com.dry_code_snippets.api.Controllers;
 
 import com.dry_code_snippets.api.Models.Comment;
 import com.dry_code_snippets.api.Services.CommentService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,8 +23,9 @@ public class CommentController {
         return ResponseEntity.ok(commentService.getCommentsBySnippetId(snippetId));
     }
 
-    @PostMapping
+   @PostMapping
     public ResponseEntity<Comment> addComment(@RequestParam("snippetId") Long snippetId, @RequestBody String commentText) {
-        return ResponseEntity.ok(commentService.addComment(snippetId, commentText));
+        Comment createdComment = commentService.addComment(snippetId, commentText);
+        return new ResponseEntity<>(createdComment, HttpStatus.CREATED);
     }
 }

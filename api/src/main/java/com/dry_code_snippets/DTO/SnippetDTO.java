@@ -3,27 +3,32 @@ package com.dry_code_snippets.DTO;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Getter
 @Setter
 public class SnippetDTO {
 
-    private Long snippetId;
-    private Long userId;
+    private Integer snippetId;
+    private Integer userId;
     private String title;
     private String description;
     private String language;
     private String code;
-    private LocalDateTime updatedAt;
+    private String updatedat;
+    private BigDecimal rating;
+    private String[] tags;
 
-    public SnippetDTO(Long snippetId, Long userId, String title, String description, String language, LocalDateTime updatedAt, String code) {
+    public SnippetDTO(Integer snippetId, Integer userId, String title, String description, String language, String updatedAt, String code,BigDecimal rating, String[] tags) {
         this.snippetId = snippetId;
         this.userId = userId;
         this.title = title;
         this.description = description;
         this.language = language;
-        this.updatedAt = updatedAt;
+        this.updatedat = LocalDate.now().toString();
         this.code = code;
+        this.rating = BigDecimal.valueOf(0);
+        this.tags = tags;
     }
 }

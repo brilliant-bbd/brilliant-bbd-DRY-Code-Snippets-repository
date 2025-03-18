@@ -27,13 +27,13 @@ public class VersionServiceTest {
 
     @BeforeEach
     void setUp() {
-        version1 = new Version(1L, 1, "Code snippet v1");
-        version2 = new Version(1L, 2, "Code snippet v2");
+        version1 = new Version(1L, 1L, "Code snippet v1");
+        version2 = new Version(1L, 2L, "Code snippet v2");
     }
 
     @Test
     public void testGetVersionsBySnippetId() {
-        when(versionRepository.findBySnippetId(1L)).thenReturn(List.of(version1, version2));
+        when(versionRepository.findBySnippetId(1L)).thenReturn(java.util.Optional.of(List.of(version1, version2)));
 
         List<Version> versions = versionService.getVersionsBySnippetId(1L);
 

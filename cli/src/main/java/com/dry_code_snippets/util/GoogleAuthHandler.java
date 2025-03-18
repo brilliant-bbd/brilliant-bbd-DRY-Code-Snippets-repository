@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.*;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,8 +55,11 @@ public class GoogleAuthHandler {
                         if (jwtToken == null) {
                             output = "ERROR: Login unsuccessful. Try again";
                         } else {
-                            output = RequestHandler.getRequest("/api/login", "");
-                            debugPrint("RESPONSE: " + output);
+                            HttpResponse<String> response = RequestHandler.getRequest("/api/login", "");
+                            if (response != null && response.statusCode() == 204 ) {
+                                output = "Login Successful";
+                            }
+                            debugPrint("RESPONSE: " + response);
                             debugPrint("JWT: " + jwtToken);
                         }
                     } else {

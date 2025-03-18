@@ -20,8 +20,8 @@ public class Version {
     @Column(name = "snippetId", nullable = false)
     private Long snippetId;
 
-    @Column(name = "versionNum", nullable = false)
-    private int versionNum;
+    @Column(name = "version", nullable = false)
+    private Long version;
 
     @Column(name = "code", nullable = false)
     private String code;
@@ -29,9 +29,9 @@ public class Version {
     @Column(name = "createdAt")
     private LocalDateTime createdAt;
 
-    public Version(Long snippetId, int versionNum, String code) {
+    public Version(Long snippetId, Long version, String code) {
         this.snippetId = snippetId;
-        this.versionNum = versionNum;
+        this.version = version;
         this.code = code;
         this.createdAt = LocalDateTime.now();
     }

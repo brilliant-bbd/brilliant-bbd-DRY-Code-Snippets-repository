@@ -2,8 +2,16 @@ package com.dry_code_snippets.api.Repositories;
 
 import com.dry_code_snippets.api.Models.Version;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import java.util.List;
+import java.util.Optional;
 
 public interface VersionRepository extends JpaRepository<Version, Long> {
-    List<Version> findBySnippetId(Long snippetId);
+    Optional<List<Version>> findBySnippetId(Long snippetId);
+
+    @Query(value = "SELECT v.* FROM versions v WHERE v.snippet_id = :snippetId ORDER BY v.created_at DESC LIMIT 1", nativeQuery = true)
+    Optional<Version> findLatestVersionBySnippetId(@Param("snippetId") Long snippetId);
+
 }
