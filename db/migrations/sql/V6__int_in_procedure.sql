@@ -1,4 +1,3 @@
--- Recreate the views with BIGINT references
 
 CREATE OR REPLACE VIEW view_snippets AS
 SELECT 
