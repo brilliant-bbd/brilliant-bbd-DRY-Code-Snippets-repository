@@ -40,9 +40,9 @@ public class SnippetController {
     }
 
     // Get a snippet by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Snippet> getSnippetById(@PathVariable("id") Long id) {
-        Optional<Snippet> snippet = snippetService.getSnippetById(id);
+    @GetMapping("/{snippetId}")
+    public ResponseEntity<SnippetDTO> getSnippetById(@PathVariable("snippetId") Long snippetId) {
+        Optional<SnippetDTO> snippet = Optional.of(snippetService.getSnippetById(snippetId));
         return snippet.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 

@@ -33,7 +33,7 @@ public class UserServiceTest {
     public void setUp() {
         // Initialize mocks and the UserService instance
         MockitoAnnotations.openMocks(this);
-        userService = new UserService();
+        userService = new UserService(null);
 
         // Mock SecurityContextHolder to return the mocked authentication
         SecurityContextHolder.getContext().setAuthentication(authentication);

@@ -8,17 +8,21 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
+import com.dry_code_snippets.api.Models.User;
+import com.dry_code_snippets.api.Repositories.UserRepository;
+
 @Service
 public class UserService {
-    private UUID claim = null;
-    public UserService(){
-        claim = setClaim();
+    private UserRepository userRepository;
+    public UserService(UserRepository userRepository){
+        this.userRepository = userRepository;
     }
     
     public void login() {
-        claim = setClaim();
+        userRepository.findByUserGuid(getClaim())
+        .orElseGet(() -> userRepository.save(new User(getClaim())));
     }
-    private UUID setClaim() {
+    public UUID getClaim() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UUID userGuid = null;
         if (authentication instanceof JwtAuthenticationToken) {
@@ -46,12 +50,5 @@ public class UserService {
         long lowBits = Long.parseLong(lowBitsString, 16);
 
         return new UUID(highBits, lowBits);
-    }
-
-    public UUID getClaim() {
-        if (claim == null) {
-            claim = setClaim();
-        }
-        return claim;
     }
 }

@@ -6,24 +6,16 @@ import lombok.Setter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "SnippetTags")
+@Table(name = "Snippettags")
 @Getter
 @Setter
 @NoArgsConstructor
 public class SnippetTag
 {
-    @Id
-    @Column(name = "snippetTagsId")
-    private Long snippetTagsId;
-   
-    @Column(name = "snippetId")
-    private Long snippetId;
+    @EmbeddedId
+    private SnippetTagId id;
 
-    @Column(name = "tagId")
-    private Long tagId;
-
-    public SnippetTag(Long snippetId, long tagId) {
-        this.snippetId = snippetId;
-        this.tagId = tagId;
+    public SnippetTag(Long snippetId, Long tagId) {
+        this.id = new SnippetTagId(snippetId, tagId);
     }
 }
