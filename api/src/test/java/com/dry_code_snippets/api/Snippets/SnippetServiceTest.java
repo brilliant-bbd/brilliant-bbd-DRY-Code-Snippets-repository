@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -61,7 +62,7 @@ class SnippetServiceTest {
                 "Test Title",
                 "Test Description",
                 1);
-        snippetDTO = new SnippetDTO(2, 1, "some title", "some description", "java", LocalDateTime.now().toString(),
+        snippetDTO = new SnippetDTO(2, 1, "some title", "some description", "java", Timestamp.valueOf(LocalDateTime.now()).toString(),
                 "this is the code",BigDecimal.ONE,"tag,tag");
 
                   Optional<Language> language = Optional.of(new Language("java"));
@@ -99,9 +100,7 @@ class SnippetServiceTest {
 
     @Test
     void testCreateSnippet() {
-
-
-
+        
         when(languageRepository.findByLanguageName("java")).thenReturn(Optional.of(language));
 
         when(userService.getClaim()).thenReturn(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));

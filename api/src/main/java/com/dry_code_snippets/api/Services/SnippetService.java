@@ -4,23 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import com.dry_code_snippets.DTO.SnippetDTO;
-import com.dry_code_snippets.api.Models.Language;
-import com.dry_code_snippets.api.Models.Snippet;
-import com.dry_code_snippets.api.Models.SnippetTag;
-import com.dry_code_snippets.api.Models.Tag;
-import com.dry_code_snippets.api.Models.User;
-import com.dry_code_snippets.api.Models.Version;
-import com.dry_code_snippets.api.Repositories.LanguageRepository;
-import com.dry_code_snippets.api.Repositories.SnippetRepository;
-import com.dry_code_snippets.api.Repositories.SnippetTagRepository;
-import com.dry_code_snippets.api.Repositories.TagRepository;
-import com.dry_code_snippets.api.Repositories.UserRepository;
-import com.dry_code_snippets.api.Repositories.VersionRepository;
-
+import com.dry_code_snippets.api.Models.*;
+import com.dry_code_snippets.api.Repositories.*;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
-
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,8 +35,19 @@ public class SnippetService {
         this.snippetTagRepository = snippetTagRepository;
     }
 
-    public List<SnippetDTO> getAllSnippets(String tag, String language) {
-        return snippetRepository.findSnippetsWithTagsAndRatings(language,List.of(tag.split(";")));
+    public List<SnippetDTO> getAllSnippets(Optional<String> tag, Optional<String> language) {
+        String tagAndNull = tag.orElse(null);
+        String languageOrNull = language.orElse(null);
+        if(tagAndNull.isEmpty())
+        {
+            return snippetRepository.findSnippetsWithTagsAndRatingsAndNullTags(languageOrNull);
+        }
+        if(languageOrNull.isEmpty())
+        {
+            return snippetRepository.findSnippetsWithTagsAndRatingsAndNullLanguage(List.of(tagAndNull.split(";")));
+        }
+
+        return snippetRepository.findSnippetsWithTagsAndRatings(languageOrNull,List.of(tagAndNull.split(";")));
     }
 
     public Optional<Snippet> getSnippetById(Long snippetId) {

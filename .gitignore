@@ -48,6 +48,7 @@ terraform.rc
 *.jar
 *.war
 *.ear
+*.properties
 
 # Gradle
 .gradle/

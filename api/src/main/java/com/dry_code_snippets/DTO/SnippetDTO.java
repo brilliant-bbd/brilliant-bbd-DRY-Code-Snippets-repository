@@ -4,8 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter
@@ -17,7 +15,7 @@ public class SnippetDTO {
     private String description;
     private String language;
     private String code;
-    private String updatedAt;
+    private String updatedat;
     private BigDecimal rating;
     private String tags;
 
@@ -27,7 +25,7 @@ public class SnippetDTO {
         this.title = title;
         this.description = description;
         this.language = language;
-        this.updatedAt = updatedAt;
+        this.updatedat = updatedAt;
         this.code = code;
         this.rating = rating;
         this.tags = tags;
