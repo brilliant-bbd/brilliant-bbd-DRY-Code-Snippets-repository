@@ -24,7 +24,8 @@ public class CommentService {
     }
 
     public List<Comment> getCommentsBySnippetId(Long snippetId) {
-        return commentRepository.findBySnippetId(snippetId);
+        
+        return commentRepository.findCommentsBySnippetId(snippetId);
     }
 
     public Comment addComment(Long snippetId, String commentText) {
