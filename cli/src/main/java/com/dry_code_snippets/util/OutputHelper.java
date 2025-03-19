@@ -1,8 +1,8 @@
 package com.dry_code_snippets.util;
 
-import static com.dry_code_snippets.util.EnvLoader.getDebug;
-
 public class OutputHelper {
+
+    private static final boolean DEBUG = true;
 
     public static void cliPrint(String text) {
         if (text.startsWith("ERROR: ")) {
@@ -23,7 +23,7 @@ public class OutputHelper {
     }
 
     public static void debugPrint(String text) {
-        if (getDebug()) {
+        if (DEBUG) {
             changeTextBlue();
             System.out.println("\r" + text);
             changeTextGreen();
