@@ -1,26 +1,19 @@
 package com.dry_code_snippets.util;
 
 import com.sun.net.httpserver.HttpServer;
-import io.github.cdimascio.dotenv.Dotenv;
-
 import java.awt.*;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.*;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.dry_code_snippets.util.EnvLoader.getClientId;
-import static com.dry_code_snippets.util.EnvLoader.getClientSecret;
 import static com.dry_code_snippets.util.OutputHelper.cliPrint;
 import static com.dry_code_snippets.util.OutputHelper.debugPrint;
 
 public class GoogleAuthHandler {
-    private static final String CLIENT_ID = getClientId();
-    private static final String CLIENT_SECRET = getClientSecret();
+    private static final String CLIENT_ID = "664830995974-t1ql2bsusulrkuvu59473qd2mkc8ummd.apps.googleusercontent.com";
     private static final String REDIRECT_URI = "http://localhost:9090/callback";
     public static String jwtToken = "";
 
@@ -35,10 +28,10 @@ public class GoogleAuthHandler {
 
         Desktop desktop = java.awt.Desktop.getDesktop();
         desktop.browse(new URI(authUrl));
-        startCallbackServer();
+        getJwtToken();
     }
 
-    private static void startCallbackServer() throws IOException {
+    private static void getJwtToken() throws IOException {
         HttpServer callbackServer = HttpServer.create(new InetSocketAddress(9090), 0);
         callbackServer.createContext("/callback", exchange -> {
 
@@ -51,13 +44,15 @@ public class GoogleAuthHandler {
 
                     if (authCodeMatcher.find()) {
                         String authCode = authCodeMatcher.group(1);
-                        jwtToken = getJwtToken(authCode);
-                        if (jwtToken == null) {
+                        if (authCode == null) {
                             output = "ERROR: Login unsuccessful. Try again";
                         } else {
-                            HttpResponse<String> response = RequestHandler.getRequest("/api/login", "");
-                            if (response != null && response.statusCode() == 204 ) {
+                            HttpResponse<String> response = RequestHandler.loginPostRequest(authCode);
+                            if (response != null && response.statusCode() == 200 ) {
                                 output = "Login Successful";
+                                jwtToken = response.body();
+                            } else {
+                                output = "Login Unsuccessful";
                             }
                             debugPrint("RESPONSE: " + response);
                             debugPrint("JWT: " + jwtToken);
@@ -79,30 +74,5 @@ public class GoogleAuthHandler {
 
         });
         callbackServer.start();
-    }
-
-    private static String getJwtToken(String authCode) throws IOException {
-        String tokenRequest = "code=" + authCode +
-                "&client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET +
-                "&redirect_uri=" + REDIRECT_URI + "&grant_type=authorization_code";
-
-        HttpURLConnection tokenConnection = (HttpURLConnection) URI.create("https://oauth2.googleapis.com/token").toURL().openConnection();
-        tokenConnection.setRequestMethod("POST");
-        tokenConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        tokenConnection.setDoOutput(true);
-
-        OutputStream postOutputStream = tokenConnection.getOutputStream();
-        postOutputStream.write(tokenRequest.getBytes());
-
-        InputStream inputStream = tokenConnection.getInputStream();
-
-        String tokenObject = new String(inputStream.readAllBytes());
-        Matcher matcher = Pattern.compile("\"id_token\": \"([^\"]*)").matcher(tokenObject);
-        if (matcher.find()) {
-            // Matches the JWT Token
-            return matcher.group(1);
-        } else {
-            return null;
-        }
     }
 }
