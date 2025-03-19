@@ -224,7 +224,7 @@ jobs:
         working-directory: ./cli
         run: |
           mkdir -p deploy
-          cp target/*.jar deploy/cli.jar
+          cp target/CLI-1.0-SNAPSHOT.jar deploy/cli.jar
           cd deploy
           zip -r ../cli.zip .
 
