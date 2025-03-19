@@ -35,4 +35,10 @@ public class CommentController {
         ResponseEntity.ok(createdComment):
         ResponseEntity.notFound().build();
     }
+
+    public ResponseEntity<List<Comment>> getCommentsByVersion(
+            @RequestParam("snippetId") Long snippetId, @RequestParam("version") Long version) {
+        List<Comment> comments = commentService.getCommentsBySnippetIdAndVersion(snippetId, version);
+        return ResponseEntity.ok(comments);
+    }
 }

@@ -32,5 +32,9 @@ public class CommentService {
         Comment comment = new Comment(snippetId,user.getUserId(),commentText);
         return commentRepository.save(comment);
     }
+    public List<Comment> getCommentsBySnippetIdAndVersion(Long snippetId, Long versionNumber) {
+        return commentRepository.findCommentsBySnippetIdAndVersion(snippetId, versionNumber);
+    }
+
 
 }
