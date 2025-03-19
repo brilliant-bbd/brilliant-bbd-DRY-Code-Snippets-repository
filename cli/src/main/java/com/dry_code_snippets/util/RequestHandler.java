@@ -11,9 +11,7 @@ import static com.dry_code_snippets.util.OutputHelper.cliPrintError;
 import static com.dry_code_snippets.util.OutputHelper.debugPrint;
 
 public class RequestHandler {
-//  private static final String BASE_URL = "http://dry-code-snippets-tfoject-prod.eba-ryhpdtkm.af-south-1.elasticbeanstalk.com";
-    private static final String BASE_URL = "http://localhost:8080";
-
+    private static final String BASE_URL = "http://dry-code-snippets-tfoject-prod.eba-ryhpdtkm.af-south-1.elasticbeanstalk.com";
     private static final HttpClient CLIENT = HttpClient.newHttpClient();
 
     private static String buildUrl(String path, String queryParams) {
