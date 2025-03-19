@@ -19,7 +19,7 @@ public class VersionService {
     private SnippetRepository snippetRepository;
 
     public List<Version> getVersionsBySnippetId(Long snippetId) {
-        return versionRepository.findBySnippetId(snippetId).orElse(Collections.emptyList());
+        return versionRepository.findVersionsBySnippetId(snippetId).orElse(Collections.emptyList());
     }
 
     public Version createVersion(Long snippetId, String code) {

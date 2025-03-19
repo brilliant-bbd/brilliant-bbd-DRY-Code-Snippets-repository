@@ -2,7 +2,7 @@ package com.dry_code_snippets.util;
 
 public class OutputHelper {
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     public static void cliPrint(String text) {
         if (text.startsWith("ERROR: ")) {
