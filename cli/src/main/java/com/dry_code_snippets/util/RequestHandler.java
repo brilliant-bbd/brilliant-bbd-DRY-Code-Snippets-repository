@@ -26,13 +26,14 @@ public class RequestHandler {
 
     private static String encodedQueryParam(String key, String value) {
         try {
-            if (value != null && !value.isBlank()) {
+            if (value != null) {
                 return URLEncoder.encode(key, StandardCharsets.UTF_8) + "=" +
                         URLEncoder.encode(value, StandardCharsets.UTF_8);
             }
             return "";
         } catch (Exception e) {
-            return "";        }
+            return "";
+        }
     }
 
     public static String addQueryParam(String queryParams, String key, String value) {
@@ -51,6 +52,7 @@ public class RequestHandler {
             switch (response.statusCode()) {
                 case 400 -> cliPrintError("ERROR: 400 Invalid Request");
                 case 401 -> cliPrintError("ERROR: 401 Unauthorized");
+                case 403 -> cliPrintError("ERROR: 403 Forbidden");
                 case 404 -> cliPrintError("ERROR: 404 Not Found");
                 default -> cliPrintError("ERROR: Request Failed");
             };

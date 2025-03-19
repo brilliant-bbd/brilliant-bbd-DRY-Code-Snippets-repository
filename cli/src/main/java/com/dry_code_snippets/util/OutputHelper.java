@@ -32,11 +32,11 @@ public class OutputHelper {
     }
 
     public static void printWrapperTop(String header) {
-        cliPrint("----------------------------------------\n" + header + ": \n");
+        cliPrint("\r----------------------------------------\n" + header + ": \n");
     }
 
     public static void printWrapperBottom() {
-        cliPrint("----------------------------------------");
+        cliPrint("\r----------------------------------------");
     }
 
     public static void changeTextGreen() {
