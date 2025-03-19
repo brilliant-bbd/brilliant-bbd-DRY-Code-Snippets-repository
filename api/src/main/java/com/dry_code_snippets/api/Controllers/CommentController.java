@@ -37,9 +37,11 @@ public class CommentController {
     }
 
     @GetMapping("/version")
-    public ResponseEntity<List<Comment>> getCommentsByVersion(
-            @RequestParam("snippetId") Long snippetId, @RequestParam("version") Long version) {
+    public ResponseEntity<List<Comment>> getCommentsByVersion( @RequestParam("snippetId") Long snippetId, @RequestParam("version") Long version) {
         List<Comment> comments = commentService.getCommentsBySnippetIdAndVersion(snippetId, version);
-        return ResponseEntity.ok(comments);
+
+        return sharedService.resourceExists(snippetId) ?
+                ResponseEntity.ok(comments) :
+                ResponseEntity.notFound().build();
     }
 }
