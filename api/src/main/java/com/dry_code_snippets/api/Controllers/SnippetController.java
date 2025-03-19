@@ -7,10 +7,12 @@ import org.springframework.web.bind.annotation.*;
 
 import com.dry_code_snippets.DTO.SnippetDTO;
 import com.dry_code_snippets.api.Models.Snippet;
+import com.dry_code_snippets.api.Services.AIService;
 import com.dry_code_snippets.api.Services.SharedService;
 import com.dry_code_snippets.api.Services.SnippetService;
 
 import jakarta.validation.Valid;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,11 +22,13 @@ import java.util.Optional;
 public class SnippetController {
     private final SnippetService snippetService;
     private final SharedService sharedService;
+    private final AIService aiService;
 
     @Autowired
-    public SnippetController(SnippetService snippetService, SharedService sharedService) {
+    public SnippetController(SnippetService snippetService, SharedService sharedService, AIService aiService) {
         this.snippetService = snippetService;
         this.sharedService = sharedService;
+        this.aiService = aiService;
     }
 
     @GetMapping
@@ -84,5 +88,10 @@ public class SnippetController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/{id}/explain")
+    public Mono<String> explainSnippet(@PathVariable("id") Long id) {
+        return aiService.explainSnippet(id);
     }
 }

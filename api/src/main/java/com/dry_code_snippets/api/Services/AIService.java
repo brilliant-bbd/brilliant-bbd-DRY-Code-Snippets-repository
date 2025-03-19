@@ -18,10 +18,15 @@ import java.util.Map;
 public class AIService {
     private final WebClient webClient;
     private final SnippetRepository snippetRepository;
+    String apiToken = System.getenv("HUGGINGFACE_API_TOKEN");
 
     public AIService(WebClient.Builder webClientBuilder, SnippetRepository snippetRepository) {
+        if (apiToken == null || apiToken.isEmpty()) {
+            throw new IllegalArgumentException("Huggingface API Token is missing!");
+        }
+        
         this.webClient = webClientBuilder.baseUrl("https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct")
-                .defaultHeader("Authorization", "Bearer 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")
+                .defaultHeader("Authorization", "Bearer " + apiToken)
                 .build();
         this.snippetRepository = snippetRepository;
     }
@@ -33,9 +38,10 @@ public class AIService {
                         return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet not found with ID: " + id));
                     }
                     
-                    String prompt = "User: I have this code snippet and I need a detailed explanation of what it does. Please analyze each function, method, and important lines, and explain their purpose. \n\n" +
-                            "```\n" + optionalSnippet.get().getCode() + "\n```\n\n" +
-                            "Assistant:";
+                    String prompt = "User: I’ve got a code snippet here, and I need a breakdown like I’m five—but also like I’m a developer. Explain each function, method, and any key logic in simple terms. Wrap it up with a short summary. Clarity is key, and if you can sneak in a little wit, even better! \n\n" + //
+                                                " Here’s the snippet: \n\n" +
+                            "```\n" + optionalSnippet.get().getCode() + "\n\n\n" +
+                                                        "Assistant:";
                     
                     return callAIForExplanation(prompt);
                 });
