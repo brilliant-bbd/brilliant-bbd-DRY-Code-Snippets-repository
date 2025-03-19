@@ -27,8 +27,8 @@ public class ExplainSnippet implements Runnable {
         } else if (checkValidResponse(response)) {
 
             debugPrint(response.body());
-            printWrapperTop("SNIPPET EXPLANATION");
-            cliPrint("\n" + response.body() + "\n");
+            printWrapperTop("SNIPPET AI EXPLANATION");
+            cliPrint(response.body() + "\n");
             printWrapperBottom();
 
         }

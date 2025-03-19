@@ -22,7 +22,7 @@ public class VersionRepositoryTest {
         versionRepository.save(version1);
         versionRepository.save(version2);
 
-        Optional<List<Version>> versions = versionRepository.findBySnippetId(1L);
+        Optional<List<Version>> versions = versionRepository.findVersionsBySnippetId(1L);
 
         assertThat(versions.get()).hasSize(2);
         assertThat(versions.get().get(0).getVersion()).isEqualTo(1L);

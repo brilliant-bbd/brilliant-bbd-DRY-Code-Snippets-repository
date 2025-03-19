@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter;
 
 public class Rating {
 
-    private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
+    private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     @JsonProperty("ratingId")
     private int ratingId;

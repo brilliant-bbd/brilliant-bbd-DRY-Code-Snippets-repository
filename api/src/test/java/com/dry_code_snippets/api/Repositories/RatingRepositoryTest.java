@@ -39,7 +39,7 @@ class RatingRepositoryTest {
     @Transactional
     @Rollback
     void testFindBySnippetId() {
-        List<Rating> ratings = ratingRepository.findBySnippetId(1L);
+        List<Rating> ratings = ratingRepository.findRatingsBySnippetId(1L);
         assertEquals(2, ratings.size());
         assertTrue(ratings.stream().anyMatch(r -> r.getUserId().equals(101L)));
         assertTrue(ratings.stream().anyMatch(r -> r.getUserId().equals(102L)));
