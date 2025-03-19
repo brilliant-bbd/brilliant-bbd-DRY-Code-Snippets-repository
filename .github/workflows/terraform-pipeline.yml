@@ -215,30 +215,30 @@ jobs:
       - name: Prepare API Package
         working-directory: ./api
         run: |
-          echo "Listing contents of target directory:"
-          ls -la target/
           mkdir -p deploy
-          # Find the actual JAR file and copy it
-          find target -name "*.jar" -type f -exec cp {} deploy/cli.jar \;
+          cp target/*.jar deploy/application.jar
           cd deploy
-          if [ -f "cli.jar" ]; then
-            zip -r ../cli.zip .
-          else
-            echo "No JAR file found in target directory!"
-            exit 1
-          fi
+          zip -r application.zip application.jar
+      
+      - name: Prepare CLI Package
+        working-directory: ./cli
+        run: |
+          mkdir -p deploy
+          cp target/w deploy/application.jar  
+          cd deploy
+          zip -r application.zip application.jar
 
       - name: Upload API Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: api-zip
-          path: ./api/api.zip
+          name: application-zip
+          path: ./api/deploy/application.zip
 
       - name: Upload CLI Artifact
         uses: actions/upload-artifact@v4
         with:
           name: cli-zip
-          path: ./cli/cli.zip
+          path: ./cli/deploy/application.zip
 
   release:
     name: Update GitHub Release
@@ -252,8 +252,8 @@ jobs:
       - name: Download CLI Artifact
         uses: actions/download-artifact@v4
         with:
-          name: cli-zip
-          path: cli-release
+          name: application-zip
+          path: cli/deploy
 
       - name: Update GitHub Release
         uses: softprops/action-gh-release@v1
@@ -264,7 +264,7 @@ jobs:
           body: "This release includes both CLI updates."
           draft: false
           prerelease: false
-          files: cli-release/cli.zip
+          files: cli/deploy/application.zip
 
   deploy:
     name: Deploy to Elastic Beanstalk
@@ -275,7 +275,7 @@ jobs:
       - name: Download Built Artifact
         uses: actions/download-artifact@v4
         with:
-          name: api-zip
+          name: application-zip
           path: deploy
 
       - name: Configure AWS Credentials
@@ -295,21 +295,19 @@ jobs:
       - name: Deploy to Elastic Beanstalk
         run: |
           VERSION_LABEL="v-$(date +%Y%m%d-%H%M%S)"
+    
+          aws s3 cp deploy/application.zip s3://dry-code-snippets-bucket/\
+          ${{ vars.AWS_EB_APP_NAME }}/$VERSION_LABEL/application.zip
           
-          # Copy the zip file to S3
-          aws s3 cp ./deploy/api.zip s3://dry-code-snippets-bucket/${{ vars.AWS_EB_APP_NAME }}/$VERSION_LABEL/application.zip
-          
-          # Create application version
           aws elasticbeanstalk create-application-version \
-            --application-name ${{ vars.AWS_EB_APP_NAME }} \
-            --version-label "$VERSION_LABEL" \
-            --source-bundle S3Bucket=dry-code-snippets-bucket,S3Key="${{ vars.AWS_EB_APP_NAME }}/$VERSION_LABEL/application.zip"
+          --application-name ${{ vars.AWS_EB_APP_NAME }} \
+          --version-label "$VERSION_LABEL" \
+          --source-bundle S3Bucket=dry-code-snippets-bucket,S3Key="${{ vars.AWS_EB_APP_NAME }}/$VERSION_LABEL/application.zip" \
           
-          # Update environment with new version
           aws elasticbeanstalk update-environment \
-            --environment-name $ENV_NAME \
-            --version-label "$VERSION_LABEL" \
-            --application-name ${{ vars.AWS_EB_APP_NAME }}
+          --environment-name $ENV_NAME \
+          --version-label "$VERSION_LABEL" \
+          --application-name ${{ vars.AWS_EB_APP_NAME }}
 
   verify-deployment:
     name: Verify Deployment
