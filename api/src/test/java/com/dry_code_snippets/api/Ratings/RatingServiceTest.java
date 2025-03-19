@@ -58,12 +58,12 @@ class RatingServiceTest {
 
     @Test
     void testGetRatingsForSnippet() {
-        when(ratingRepository.findBySnippetId(1L)).thenReturn(List.of(rating));
+        when(ratingRepository.findRatingsBySnippetId(1L)).thenReturn(List.of(rating));
 
         List<Rating> ratings = ratingService.getRatingsForSnippet(1L);
 
         assertEquals(1, ratings.size());
         assertEquals(5, ratings.get(0).getRating());
-        verify(ratingRepository, times(1)).findBySnippetId(1L);
+        verify(ratingRepository, times(1)).findRatingsBySnippetId(1L);
     }
 }

@@ -42,12 +42,12 @@ public class VersionServiceTest {
 
     @Test
     public void testGetVersionsBySnippetId() {
-        when(versionRepository.findBySnippetId(1L)).thenReturn(Optional.of(List.of(version1, version2)));
+        when(versionRepository.findVersionsBySnippetId(1L)).thenReturn(Optional.of(List.of(version1, version2)));
 
         List<Version> versions = versionService.getVersionsBySnippetId(1L);
 
         assertEquals(2, versions.size());
-        verify(versionRepository, times(1)).findBySnippetId(1L);
+        verify(versionRepository, times(1)).findVersionsBySnippetId(1L);
     }
 
     @Test
@@ -59,7 +59,7 @@ public class VersionServiceTest {
         mockVersion.setSnippetId(snippetId);
         mockVersion.setCode(code);
 
-        when(versionRepository.findBySnippetId(1L)).thenReturn(Optional.of(List.of(version1, version2)));
+        when(versionRepository.findVersionsBySnippetId(1L)).thenReturn(Optional.of(List.of(version1, version2)));
         when(versionRepository.save(any(Version.class))).thenReturn(mockVersion);
         when(snippetRepository.existsById(snippetId)).thenReturn(true);
 
@@ -76,7 +76,7 @@ public class VersionServiceTest {
 
     @Test
     public void testGetVersionBySnippetIdAndVersionId() {
-        when(versionRepository.findBySnippetId(1L)).thenReturn(Optional.of(List.of(version1, version2)));
+        when(versionRepository.findVersionsBySnippetId(1L)).thenReturn(Optional.of(List.of(version1, version2)));
 
         Version retrievedVersion = versionService.getVersionBySnippetIdAndVersionId(1L, 2L);
 
