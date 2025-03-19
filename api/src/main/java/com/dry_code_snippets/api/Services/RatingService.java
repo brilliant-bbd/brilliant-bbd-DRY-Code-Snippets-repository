@@ -4,8 +4,10 @@ import com.dry_code_snippets.api.Models.User;
 import com.dry_code_snippets.api.Repositories.UserRepository;
 import com.dry_code_snippets.api.Shared.Shared;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.dry_code_snippets.api.Models.Rating;
 import com.dry_code_snippets.api.Models.Snippet;
 import com.dry_code_snippets.api.Repositories.RatingRepository;
@@ -38,7 +40,7 @@ public class RatingService {
                 .orElseThrow(() -> new NoSuchElementException("Snippet not found for ID: " + snippetId));
 
         if (snippet.getUserId().equals(user.getUserId())) {
-            throw new IllegalArgumentException("Users cannot rate their own snippets.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Users cannot rate their own snippets.");
         }
 
         if (snippet.isDeleted()) {
