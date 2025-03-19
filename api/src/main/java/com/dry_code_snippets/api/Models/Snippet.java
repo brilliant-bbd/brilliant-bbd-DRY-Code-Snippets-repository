@@ -26,12 +26,12 @@ public class Snippet {
     private String description;
 
     @Column(name = "languageId", nullable = false)
-    private int languageId;
+    private Long languageId;
 
     @Column(name = "isDeleted")
     private boolean isDeleted;
 
-    public Snippet(Long userId, String title, String description, int languageId) {
+    public Snippet(Long userId, String title, String description, Long languageId) {
         this.userId = userId; 
         this.title = title;
         this.description = description;

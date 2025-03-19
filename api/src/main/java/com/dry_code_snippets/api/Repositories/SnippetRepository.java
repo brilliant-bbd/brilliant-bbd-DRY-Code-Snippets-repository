@@ -25,7 +25,7 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
                 l.language_name AS language,
                 TO_CHAR(v.created_at, 'YYYY-MM-DD HH24:MI:SS') AS "updatedAt",
                 v.code AS "code",
-                AVG(r.rating) AS rating,
+                COALESCE(AVG(r.rating), -1) AS rating,
                 ARRAY_AGG(t.tag_name) AS tags
             FROM
                 snippets s
@@ -49,7 +49,11 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
                 )
                 AND v.created_at = (SELECT MAX(v2.created_at) FROM versions v2 WHERE v2.snippet_id = s.snippet_id)
             GROUP BY
-                s.snippet_id, s.title, s.description, l.language_name, v.code, v.created_at;
+                s.snippet_id, s.title, s.description, l.language_name, v.code, v.created_at
+            ORDER BY
+                    s.snippet_id
+            ASC;
+                ;
                         """, nativeQuery = true)
     List<SnippetDTO> findSnippetsWithTagsAndLanguage(
             @Param("language") String language,
@@ -64,7 +68,7 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
                 l.language_name AS language,
                 TO_CHAR(v.created_at, 'YYYY-MM-DD HH24:MI:SS') AS "updatedAt",
                 v.code AS "code",
-                AVG(r.rating) AS rating,
+                COALESCE(AVG(r.rating), -1) AS rating,
                 ARRAY_AGG(t.tag_name) AS tags
             FROM
                 snippets s
@@ -83,7 +87,10 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
                 AND l.language_name = :language
                 AND v.created_at = (SELECT MAX(v2.created_at) FROM versions v2 WHERE v2.snippet_id = s.snippet_id)
             GROUP BY
-                s.snippet_id, s.title, s.description, l.language_name, v.code, v.created_at;
+                s.snippet_id, s.title, s.description, l.language_name, v.code, v.created_at
+            ORDER BY
+                s.snippet_id
+            ASC;
                         """, nativeQuery = true)
     List<SnippetDTO> findSnippetsWithNullTagsAndLanguage(@Param("language") String language);
 
@@ -96,7 +103,7 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
                 l.language_name AS language,
                 TO_CHAR(v.created_at, 'YYYY-MM-DD HH24:MI:SS') AS "updatedAt",
                 v.code AS "code",
-                AVG(r.rating) AS rating,
+                COALESCE(AVG(r.rating), -1) AS rating,
                 ARRAY_AGG(t.tag_name) AS tags
             FROM
                 snippets s
@@ -115,7 +122,10 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
                 AND t.tag_name IN :tags
                 AND v.created_at = (SELECT MAX(v2.created_at) FROM versions v2 WHERE v2.snippet_id = s.snippet_id)
             GROUP BY
-                s.snippet_id, s.title, s.description, l.language_name, v.code, v.created_at;
+                s.snippet_id, s.title, s.description, l.language_name, v.code, v.created_at
+            ORDER BY
+                s.snippet_id
+            ASC;
                         """, nativeQuery = true)
     List<SnippetDTO> findSnippetsWithTagsAndLanguageAndNullLanguage(@Param("tags") List<String> tagAndNull);
 
@@ -128,7 +138,7 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
                 l.language_name AS language,
                 TO_CHAR(v.created_at, 'YYYY-MM-DD HH24:MI:SS') AS "updatedAt",
                 v.code AS "code",
-                AVG(r.rating) AS rating,
+                COALESCE(AVG(r.rating), -1) AS rating,
                 ARRAY_AGG(t.tag_name) AS tags
             FROM
                 snippets s
@@ -146,7 +156,10 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
                 s.is_deleted = FALSE
                 AND v.created_at = (SELECT MAX(v2.created_at) FROM versions v2 WHERE v2.snippet_id = s.snippet_id)
             GROUP BY
-                s.snippet_id, s.title, s.description, l.language_name, v.code, v.created_at;
+                s.snippet_id, s.title, s.description, l.language_name, v.code, v.created_at
+            ORDER BY
+                    s.snippet_id
+            ASC;
                         """, nativeQuery = true)
     List<SnippetDTO> findSnippetsWithNullTagsAndNullLanguage();
 
@@ -159,7 +172,7 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
                 l.language_name AS language,
                 TO_CHAR(v.created_at, 'YYYY-MM-DD HH24:MI:SS') AS "updatedAt",
                 v.code AS "code",
-                AVG(r.rating) AS rating,
+                COALESCE(AVG(r.rating), -1) AS rating,
                 ARRAY_AGG(t.tag_name) AS tags
             FROM
                 snippets s
@@ -178,18 +191,21 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
                 AND s.snippet_id = :id
                 AND v.created_at = (SELECT MAX(v2.created_at) FROM versions v2 WHERE v2.snippet_id = s.snippet_id)
             GROUP BY
-                s.snippet_id, s.title, s.description, l.language_name, v.code, v.created_at;
+                s.snippet_id, s.title, s.description, l.language_name, v.code, v.created_at
+            ORDER BY
+                    s.snippet_id
+            ASC;
                         """, nativeQuery = true)
     Optional<SnippetDTO> findSnippetDtoById(@Param("id") Long id);
 
-    @Override
-    default void deleteById(Long id) {
+    default Long softDeleteById(Long id) {
         Optional<Snippet> snippet = findById(id);
         if (snippet.isPresent()) {
             Snippet foundSnippet = snippet.get();
             foundSnippet.setDeleted(true);
             save(foundSnippet);
+            return id;
         }
+        return null;
     }
-
 }

@@ -19,7 +19,7 @@ public class SnippetRepositoryTest {
 
     @Test
     public void testCreateSnippetWithRequiredFields() {
-        Snippet snippet = new Snippet(1L, "Test Snippet", "This is a test description",  1);
+        Snippet snippet = new Snippet(1L, "Test Snippet", "This is a test description",  1L);
         
         Snippet savedSnippet = snippetRepository.save(snippet);
 
@@ -33,7 +33,7 @@ public class SnippetRepositoryTest {
             1L, 
             null,
             "This is a test description",
-            1
+            1L
         );
 
         assertThrows(DataIntegrityViolationException.class, () -> {

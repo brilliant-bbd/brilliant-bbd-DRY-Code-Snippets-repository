@@ -10,7 +10,7 @@ public class SnippetTest {
 
     @Test
     public void testSnippetRecordCreation() {
-        Snippet snippet = new Snippet(1L, "Test Snippet", "This is a test description", 1);
+        Snippet snippet = new Snippet(1L, "Test Snippet", "This is a test description", 1L);
 
         assertNotNull(snippet);
         assertEquals("userId", snippet.getUserId());
