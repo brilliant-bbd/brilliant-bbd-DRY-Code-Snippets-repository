@@ -4,14 +4,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @Getter
 @Setter
 public class SnippetDTO {
 
-    private Integer snippetId;
-    private Integer userId;
+    private Long snippetId;
+    private Long userId;
     private String title;
     private String description;
     private String language;
@@ -20,15 +19,15 @@ public class SnippetDTO {
     private BigDecimal rating;
     private String[] tags;
 
-    public SnippetDTO(Integer snippetId, Integer userId, String title, String description, String language, String updatedAt, String code,BigDecimal rating, String[] tags) {
+    public SnippetDTO(Long snippetId, Long userId, String title, String description, String language, String updatedAt, String code,BigDecimal rating, String[] tags) {
         this.snippetId = snippetId;
         this.userId = userId;
         this.title = title;
         this.description = description;
         this.language = language;
-        this.updatedat = LocalDate.now().toString();
+        this.updatedat = updatedAt;
         this.code = code;
-        this.rating = BigDecimal.valueOf(0);
+        this.rating =rating;
         this.tags = tags;
     }
 }

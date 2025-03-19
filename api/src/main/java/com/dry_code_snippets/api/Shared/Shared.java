@@ -8,6 +8,8 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import java.util.UUID;
 
 public class Shared {
+
+    
     public static UUID getClaim() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UUID userGuid = null;

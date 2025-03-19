@@ -61,13 +61,13 @@ class SnippetServiceTest {
                 1L,
                 "Test Title",
                 "Test Description",
-                1);
+                1L);
         String[] myArray1 = {"apple", "test", "cherry"};
-        snippetDTO = new SnippetDTO(2, 1, "some title", "some description", "java", Timestamp.valueOf(LocalDateTime.now()).toString(),
+        snippetDTO = new SnippetDTO(2L, 1L, "some title", "some description", "java", LocalDateTime.now().toString(),
                 "this is the code",BigDecimal.ONE,myArray1);
 
                   Optional<Language> language = Optional.of(new Language("java"));
-        language.get().setLanguageId(1);
+        language.get().setLanguageId(1L);
         language.get().setLanguageName("java");
         when(languageRepository.findByLanguageName("java")).thenReturn(java.util.Optional.of(new Language("java")));
         when(userService.getClaim()).thenReturn(UUID.fromString("123e4567-e89b-12d3-a456-426614174000")); 
@@ -92,7 +92,7 @@ class SnippetServiceTest {
     void testGetSnippetById() {
         when(snippetRepository.findById(1L)).thenReturn(Optional.of(snippet));
 
-        Optional<SnippetDTO> foundSnippet = Optional.of(snippetService.getSnippetById(1L));
+        Optional<SnippetDTO> foundSnippet = snippetService.getSnippetById(1L);
 
         assertTrue(foundSnippet.isPresent());
         assertEquals("Test Title", foundSnippet.get().getTitle());

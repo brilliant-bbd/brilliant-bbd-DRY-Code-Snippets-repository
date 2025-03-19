@@ -14,7 +14,7 @@ public class Language {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "languageId")
-    private int languageId;
+    private Long languageId;
 
     @Column(name = "languageName")
     private String languageName;
