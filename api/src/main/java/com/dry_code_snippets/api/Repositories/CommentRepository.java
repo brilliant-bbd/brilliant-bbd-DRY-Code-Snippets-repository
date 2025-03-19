@@ -12,13 +12,13 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     @Query(value = """
     SELECT 
-        c.comment_id, 
-        c.snippet_id, 
-        c.user_id, 
-        c.comment, 
-        TO_CHAR((v.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'SAST'), 'YYYY-MM-DD HH24:MI:SS')
+        comment_id, 
+        snippet_id, 
+        user_id, 
+        comment, 
+        TO_CHAR((c.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'SAST'), 'YYYY-MM-DD HH24:MI:SS') AS "created_at"
     FROM Comments c
-    WHERE c.snippet_id = :snippetId;
+    WHERE snippet_id = :snippetId;
 """, nativeQuery = true)
     List<Comment> findCommentsBySnippetId(@Param("snippetId") Long snippetId);
 @Query(value = """
@@ -27,7 +27,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
         c.snippet_id, 
         c.user_id, 
         c.comment, 
-        TO_CHAR((v.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'SAST'), 'YYYY-MM-DD HH24:MI:SS')
+        TO_CHAR((v.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'SAST'), 'YYYY-MM-DD HH24:MI:SS') AS "created_at"
     FROM Comments c
     INNER JOIN Versions v ON c.snippet_id = v.snippet_id
     WHERE c.created_at BETWEEN v.created_at
