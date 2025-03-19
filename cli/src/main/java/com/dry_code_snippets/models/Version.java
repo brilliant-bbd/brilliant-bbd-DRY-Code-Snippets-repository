@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter;
 
 public class Version {
 
-    private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
+    private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
     private static final DateTimeFormatter OUTPUT_FORMATTER = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
 
     @JsonProperty("versionId")
@@ -71,7 +71,7 @@ public class Version {
 
     @Override
     public String toString() {
-        return "Version: " + version + " of snippet " + snippetId + "\n"
+        return "Version " + version + " of snippet " + snippetId + "\n"
                 + "Created: " + createdAt.format(OUTPUT_FORMATTER) + "\n\n"
                 + "Code: \n\n" + code + "\n";
 
