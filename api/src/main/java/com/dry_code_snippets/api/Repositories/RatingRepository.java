@@ -18,7 +18,7 @@ public interface RatingRepository extends JpaRepository<Rating, Long> {
         r.rating, 
         TO_CHAR((r.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'SAST'), 'YYYY-MM-DD HH24:MI:SS')
     FROM Rating r
-    WHERE r.snippet_id = :snippetId
+    WHERE r.snippet_id = :snippetId;
 """, nativeQuery = true)
     List<Rating> findRatingsBySnippetId(@Param("snippetId") Long snippetId);
 }

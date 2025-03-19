@@ -18,7 +18,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
         c.comment, 
         TO_CHAR((v.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'SAST'), 'YYYY-MM-DD HH24:MI:SS')
     FROM Comments c
-    WHERE c.snippet_id = :snippetId
+    WHERE c.snippet_id = :snippetId;
 """, nativeQuery = true)
     List<Comment> findCommentsBySnippetId(@Param("snippetId") Long snippetId);
 @Query(value = """
@@ -41,7 +41,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
         NOW()
     )
     AND v.snippet_id = :snippetId
-    AND v.version = :versionNumber
+    AND v.version = :versionNumber;
 """, nativeQuery = true)
 List<Comment> findCommentsBySnippetIdAndVersion(@Param("snippetId") Long snippetId, @Param("versionNumber") Long versionNumber);
 }
