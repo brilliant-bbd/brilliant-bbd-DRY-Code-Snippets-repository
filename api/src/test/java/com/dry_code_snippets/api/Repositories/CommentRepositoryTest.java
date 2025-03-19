@@ -1,4 +1,4 @@
-package com.dry_code_snippets.api.Comments;
+package com.dry_code_snippets.api.Repositories;
 
 import com.dry_code_snippets.api.Models.Comment;
 import com.dry_code_snippets.api.Repositories.CommentRepository;

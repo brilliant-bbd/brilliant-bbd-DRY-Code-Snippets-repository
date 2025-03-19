@@ -1,4 +1,4 @@
-package com.dry_code_snippets.api.Snippets;
+package com.dry_code_snippets.api.Services;
 
 import com.dry_code_snippets.DTO.SnippetDTO;
 import com.dry_code_snippets.api.Models.Language;

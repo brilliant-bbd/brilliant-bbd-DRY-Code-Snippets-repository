@@ -1,4 +1,4 @@
-package com.dry_code_snippets.api.Ratings;
+package com.dry_code_snippets.api.Repositories;
 
 import com.dry_code_snippets.api.Models.Rating;
 import com.dry_code_snippets.api.Repositories.RatingRepository;

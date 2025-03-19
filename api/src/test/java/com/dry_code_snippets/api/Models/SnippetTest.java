@@ -1,4 +1,4 @@
-package com.dry_code_snippets.api.Snippets;
+package com.dry_code_snippets.api.Models;
 
 import org.junit.jupiter.api.Test;
 

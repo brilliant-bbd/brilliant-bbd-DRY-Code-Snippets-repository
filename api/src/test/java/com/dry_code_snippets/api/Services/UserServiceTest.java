@@ -1,4 +1,4 @@
-package com.dry_code_snippets.api.Snippets;
+package com.dry_code_snippets.api.Services;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
