@@ -36,6 +36,7 @@ public class CommentController {
         ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/version")
     public ResponseEntity<List<Comment>> getCommentsByVersion(
             @RequestParam("snippetId") Long snippetId, @RequestParam("version") Long version) {
         List<Comment> comments = commentService.getCommentsBySnippetIdAndVersion(snippetId, version);
