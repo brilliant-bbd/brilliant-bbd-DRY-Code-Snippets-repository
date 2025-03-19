@@ -24,7 +24,6 @@ jobs:
   build-jar:
     name: Build JAR
     runs-on: ubuntu-latest
-    needs: test-api
 
     steps:
       - name: Checkout Code
