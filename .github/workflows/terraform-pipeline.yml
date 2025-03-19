@@ -215,18 +215,18 @@ jobs:
       - name: Prepare API Package
         working-directory: ./api
         run: |
+          echo "Listing contents of target directory:"
+          ls -la target/
           mkdir -p deploy
-          cp target/*.jar deploy/application.jar
+          # Find the actual JAR file and copy it
+          find target -name "*.jar" -type f -exec cp {} deploy/cli.jar \;
           cd deploy
-          zip -r ../api.zip .
-      
-      - name: Prepare CLI Package
-        working-directory: ./cli
-        run: |
-          mkdir -p deploy
-          cp target/CLI-1.0-SNAPSHOT.jar deploy/cli.jar
-          cd deploy
-          zip -r ../cli.zip .
+          if [ -f "cli.jar" ]; then
+            zip -r ../cli.zip .
+          else
+            echo "No JAR file found in target directory!"
+            exit 1
+          fi
 
       - name: Upload API Artifact
         uses: actions/upload-artifact@v4
