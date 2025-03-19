@@ -10,6 +10,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -28,12 +30,14 @@ public class VersionServiceTest {
     @BeforeEach
     void setUp() {
         version1 = new Version(1L, 1L, "Code snippet v1");
+        version1.setVersionId(1L);
         version2 = new Version(1L, 2L, "Code snippet v2");
+        version2.setVersionId(2L);
     }
 
     @Test
     public void testGetVersionsBySnippetId() {
-        when(versionRepository.findBySnippetId(1L)).thenReturn(java.util.Optional.of(List.of(version1, version2)));
+        when(versionRepository.findBySnippetId(1L)).thenReturn(Optional.of(List.of(version1, version2)));
 
         List<Version> versions = versionService.getVersionsBySnippetId(1L);
 
@@ -41,30 +45,36 @@ public class VersionServiceTest {
         verify(versionRepository, times(1)).findBySnippetId(1L);
     }
 
-    /*@Test
+    @Test
     public void testCreateVersion() {
-        // Arrange
-        when(versionRepository.findBySnippetId(1L)).thenReturn(List.of(version1, version2));
-       // when(versionRepository.save(any(Version.class))).thenReturn(version2);
+        Long snippetId = 1L;
+        String code = "Code snippet v3";
 
-        // Act
-        Version createdVersion = versionService.createVersion(1L, "Code snippet v3");
-        System.out.println("--------------------------------------------------"+createdVersion.getVersionNum());
+        Version mockVersion = new Version();
+        mockVersion.setSnippetId(snippetId);
+        mockVersion.setCode(code);
 
-        // Assert
-        assertEquals(3, createdVersion.getVersionNum()); // New version should be 3
+        when(versionRepository.findBySnippetId(1L)).thenReturn(Optional.of(List.of(version1, version2)));
+        when(versionRepository.save(any(Version.class))).thenReturn(mockVersion);
+
+        Version savedVersion = versionService.createVersion(snippetId, code);
+
+        assertNotNull(savedVersion);
+        assertEquals(snippetId, savedVersion.getSnippetId());
+        assertEquals(code, savedVersion.getCode());
+
         verify(versionRepository, times(1)).save(any(Version.class));
     }
-*/
-   /* @Test
-    public void testGetVersionBySnippetIdAndVersionId() {
-        // Arrange
-        when(versionRepository.findBySnippetId(1L)).thenReturn(List.of(version1, version2));
 
-        // Act
+
+    @Test
+    public void testGetVersionBySnippetIdAndVersionId() {
+        when(versionRepository.findBySnippetId(1L)).thenReturn(Optional.of(List.of(version1, version2)));
+
         Version retrievedVersion = versionService.getVersionBySnippetIdAndVersionId(1L, 2L);
 
-        // Assert
-        assertEquals(2, retrievedVersion.getVersionNum());
-    }*/
+        assertNotNull(retrievedVersion);
+        assertEquals(2, retrievedVersion.getVersion());
+    }
+
 }

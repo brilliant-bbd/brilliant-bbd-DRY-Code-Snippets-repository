@@ -2,7 +2,6 @@ package com.dry_code_snippets.api.Services;
 
 import com.dry_code_snippets.api.Models.Version;
 import com.dry_code_snippets.api.Repositories.SnippetRepository;
-import com.dry_code_snippets.api.Repositories.UserRepository;
 import com.dry_code_snippets.api.Repositories.VersionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,7 +17,6 @@ public class VersionService {
     @Autowired
     private VersionRepository versionRepository;
     private SnippetRepository snippetRepository;
-    private SharedService sharedService;
 
     public List<Version> getVersionsBySnippetId(Long snippetId) {
         return versionRepository.findBySnippetId(snippetId).orElse(Collections.emptyList());

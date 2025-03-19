@@ -3,6 +3,7 @@ package com.dry_code_snippets.api.Ratings;
 import com.dry_code_snippets.api.Models.Rating;
 import com.dry_code_snippets.api.Models.User;
 import com.dry_code_snippets.api.Repositories.RatingRepository;
+import com.dry_code_snippets.api.Repositories.SnippetRepository;
 import com.dry_code_snippets.api.Repositories.UserRepository;
 import com.dry_code_snippets.api.Services.RatingService;
 import com.dry_code_snippets.api.Shared.Shared;
@@ -32,19 +33,20 @@ class RatingServiceTest {
     @InjectMocks
     private RatingService ratingService;
 
-    private User user;
+    private Optional<User> user;
     private Rating rating;
 
     @BeforeEach
     void setUp() {
-        user = new User();
-        user.setUserId(101L);
-        rating = new Rating(1L, user.getUserId(), 5);
+
+        user = Optional.of(new User());
+        user.get().setUserId(101L);
+        rating = new Rating(1L, user.get().getUserId(), 5);
     }
 
     @Test
     void testAddRating() {
-        when(userRepository.findByUserGuid(Shared.getClaim())).thenReturn(Optional.of(user));
+        when(userRepository.findByUserGuid(Shared.getClaim())).thenReturn(user);
         when(ratingRepository.save(any(Rating.class))).thenReturn(rating);
 
         Rating savedRating = ratingService.addRating(1L, 5);
