@@ -9,22 +9,38 @@ import java.util.List;
 
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
-    List<Comment> findBySnippetId(Long snippetId);
-@Query(value = """
-    SELECT c.*
+
+    @Query(value = """
+    SELECT 
+        c.comment_id, 
+        c.snippet_id, 
+        c.user_id, 
+        c.comment, 
+        TO_CHAR((v.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'SAST'), 'YYYY-MM-DD HH24:MI:SS')
     FROM Comments c
-    INNER JOIN Versions v ON c.snippetID = v.snippetID
-    WHERE c.createdAt BETWEEN v.createdAt
+    WHERE c.snippet_id = :snippetId
+""", nativeQuery = true)
+    List<Comment> findCommentsBySnippetId(@Param("snippetId") Long snippetId);
+@Query(value = """
+    SELECT 
+        c.comment_id, 
+        c.snippet_id, 
+        c.user_id, 
+        c.comment, 
+        TO_CHAR((v.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'SAST'), 'YYYY-MM-DD HH24:MI:SS')
+    FROM Comments c
+    INNER JOIN Versions v ON c.snippet_id = v.snippet_id
+    WHERE c.created_at BETWEEN v.created_at
     AND COALESCE(
-        (SELECT v1.createdAt
+        (SELECT v1.created_at
          FROM Versions v1
-         WHERE v1.versionID = v.versionID + 1
-           AND v1.snippetID = v.snippetID
-         ORDER BY v1.createdAt ASC
+         WHERE v1.version_id = v.version_id + 1
+           AND v1.snippet_id = v.snippet_id
+         ORDER BY v1.created_at ASC
          LIMIT 1),
         NOW()
     )
-    AND v.snippetID = :snippetId
+    AND v.snippet_id = :snippetId
     AND v.version = :versionNumber
 """, nativeQuery = true)
 List<Comment> findCommentsBySnippetIdAndVersion(@Param("snippetId") Long snippetId, @Param("versionNumber") Long versionNumber);

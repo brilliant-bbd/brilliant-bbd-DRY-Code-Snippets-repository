@@ -45,7 +45,7 @@ public class RatingService {
             throw new IllegalArgumentException("Snippet is deleted for ID: " + snippetId);
         }
 
-        List<Rating> allRatings = ratingRepository.findBySnippetId(snippetId);
+        List<Rating> allRatings = ratingRepository.findRatingsBySnippetId(snippetId);
 
         Rating rating = null;
         for (Rating rate : allRatings) {
@@ -66,6 +66,6 @@ public class RatingService {
     }
 
     public List<Rating> getRatingsForSnippet(Long snippetId) {
-        return ratingRepository.findBySnippetId(snippetId);
+        return ratingRepository.findRatingsBySnippetId(snippetId);
     }
 }
