@@ -23,7 +23,7 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
                 s.title,
                 s.description,
                 l.language_name AS language,
-                TO_CHAR((v.created_at AT TIME ZONE 'SAST'), 'YYYY-MM-DD HH24:MI:SS') AS "updatedAt",
+                TO_CHAR((v.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'SAST'), 'YYYY-MM-DD HH24:MI:SS') AS "updatedAt",
                 v.code AS "code",
                 COALESCE(AVG(r.rating), -1) AS rating,
                 ARRAY_AGG(t.tag_name) AS tags
@@ -66,7 +66,7 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
                 s.title,
                 s.description,
                 l.language_name AS language,
-                TO_CHAR((v.created_at AT TIME ZONE 'SAST'), 'YYYY-MM-DD HH24:MI:SS') AS "updatedAt",
+                TO_CHAR((v.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'SAST'), 'YYYY-MM-DD HH24:MI:SS') AS "updatedAt",
                 v.code AS "code",
                 COALESCE(AVG(r.rating), -1) AS rating,
                 ARRAY_AGG(t.tag_name) AS tags
@@ -101,7 +101,7 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
                 s.title,
                 s.description,
                 l.language_name AS language,
-                TO_CHAR((v.created_at AT TIME ZONE 'SAST'), 'YYYY-MM-DD HH24:MI:SS') AS "updatedAt",
+                TO_CHAR((v.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'SAST'), 'YYYY-MM-DD HH24:MI:SS') AS "updatedAt",
                 v.code AS "code",
                 COALESCE(AVG(r.rating), -1) AS rating,
                 ARRAY_AGG(t.tag_name) AS tags
@@ -136,7 +136,7 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
                 s.title,
                 s.description,
                 l.language_name AS language,
-                TO_CHAR((v.created_at AT TIME ZONE 'SAST'), 'YYYY-MM-DD HH24:MI:SS') AS "updatedAt",
+                TO_CHAR((v.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'SAST'), 'YYYY-MM-DD HH24:MI:SS') AS "updatedAt",
                 v.code AS "code",
                 COALESCE(AVG(r.rating), -1) AS rating,
                 ARRAY_AGG(t.tag_name) AS tags
@@ -170,7 +170,7 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
                 s.title,
                 s.description,
                 l.language_name AS language,
-                TO_CHAR((v.created_at AT TIME ZONE 'SAST'), 'YYYY-MM-DD HH24:MI:SS') AS "updatedAt",
+                TO_CHAR((v.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'SAST'), 'YYYY-MM-DD HH24:MI:SS') AS "updatedAt",
                 v.code AS "code",
                 COALESCE(AVG(r.rating), -1) AS rating,
                 ARRAY_AGG(t.tag_name) AS tags
