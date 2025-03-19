@@ -220,14 +220,6 @@ jobs:
           cd deploy
           zip -r application.zip application.jar
       
-      - name: Prepare CLI Package
-        working-directory: ./cli
-        run: |
-          mkdir -p deploy
-          cp target/cli-1.0-SNAPSHOT.jar deploy/application.jar
-          cd deploy
-          zip -r application.zip application.jar
-
       - name: Upload API Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -237,8 +229,8 @@ jobs:
       - name: Upload CLI Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: cli-zip
-          path: ./cli/deploy/application.zip
+          name: cli-jar
+          path: ./cli/target/
 
   release:
     name: Update GitHub Release
@@ -252,7 +244,7 @@ jobs:
       - name: Download CLI Artifact
         uses: actions/download-artifact@v4
         with:
-          name: cli-zip
+          name: cli-jar
           path: cli/deploy
 
       - name: Update GitHub Release
@@ -264,7 +256,7 @@ jobs:
           body: "This release includes both CLI updates."
           draft: false
           prerelease: false
-          files: cli/deploy/application.zip
+          files: cli/deploy/cli-1.0-SNAPSHOT.jar
 
   deploy:
     name: Deploy to Elastic Beanstalk
