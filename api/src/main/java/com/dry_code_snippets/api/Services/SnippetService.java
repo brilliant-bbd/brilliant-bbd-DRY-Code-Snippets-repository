@@ -87,23 +87,42 @@ public class SnippetService {
 
     @Transactional
     public Snippet updateSnippet(Long snippetId, String newCode) {
-        Snippet existingSnippet = snippetRepository.findById(snippetId)
-                .orElseThrow(() -> new IllegalArgumentException("Snippet not found"));
+        try {
+            // Find the snippet by ID
+            Snippet existingSnippet = snippetRepository.findById(snippetId)
+                    .orElseThrow(() -> new IllegalArgumentException("Snippet not found with ID: " + snippetId));
 
-        User user = userRepository.findByUserGuid(userService.getClaim())
-                .orElseThrow(() -> new IllegalStateException("User not found"));
+            // Verify current user owns the snippet
+            User user = userRepository.findByUserGuid(userService.getClaim())
+                    .orElseThrow(() -> new IllegalStateException("User not found"));
 
-        if (!existingSnippet.getUserId().equals(user.getUserId())) {
-            throw new IllegalArgumentException("You do not have permission to update this snippet");
+            // Determine if user owns the snippet
+            if (!existingSnippet.getUserId().equals(user.getUserId())) {
+                throw new IllegalArgumentException("You do not have permission to update this snippet");
+            }
+
+            // Get latest version
+            Optional<Version> latestVersion = versionRepository.findLatestVersionBySnippetId(snippetId);
+
+            // Determine the next version number
+            Long nextVersionNumber = latestVersion
+                    .map(version -> {
+                        return version.getVersion() + 1;
+                    })
+                    .orElse(1L);
+
+            System.out.println("Next version number: " + nextVersionNumber);
+
+            // Create and save new version
+            Version newVersion = new Version(snippetId, nextVersionNumber, newCode);
+            versionRepository.save(newVersion);
+
+            return existingSnippet;
+        } catch (Exception e) {
+            System.err.println("Error updating snippet: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
-
-        Version nextVersionNumber = versionRepository.findLatestVersionBySnippetId(snippetId)
-                .orElse(new Version(snippetId, 0L, newCode));
-
-        Version version = new Version(existingSnippet.getSnippetId(), nextVersionNumber.getVersion() + 1, newCode);
-        versionRepository.save(version);
-
-        return existingSnippet;
     }
 
     public Long deleteSnippet(@NotNull Long snippetId) {
