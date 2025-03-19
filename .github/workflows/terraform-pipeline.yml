@@ -251,7 +251,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           token: ${{ secrets.RELEASE_TAG_TOKEN }}
-          tag_name: latest-release  
+          tag_name: official  
           name: "DRY Snippets Latest Release"
           body: "This release includes both CLI updates."
           draft: false
