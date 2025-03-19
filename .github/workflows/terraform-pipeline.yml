@@ -252,8 +252,8 @@ jobs:
         with:
           token: ${{ secrets.RELEASE_TAG_TOKEN }}
           tag_name: official  
-          name: "DRY Snippets Latest Release"
-          body: "This release includes both CLI updates."
+          name: "DRY CLI"
+          body: "DRY snippets CLI that's integrated with the API"
           draft: false
           prerelease: false
           files: cli/deploy/cli-1.0-SNAPSHOT.jar
