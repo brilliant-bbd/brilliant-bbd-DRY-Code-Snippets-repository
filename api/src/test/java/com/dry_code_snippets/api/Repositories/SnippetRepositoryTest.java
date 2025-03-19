@@ -1,4 +1,4 @@
-package com.dry_code_snippets.api.Snippets;
+package com.dry_code_snippets.api.Repositories;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

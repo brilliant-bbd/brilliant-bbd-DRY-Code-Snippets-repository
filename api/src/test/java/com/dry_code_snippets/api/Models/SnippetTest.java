@@ -1,4 +1,4 @@
-package com.dry_code_snippets.api.Snippets;
+package com.dry_code_snippets.api.Models;
 
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +13,7 @@ public class SnippetTest {
         Snippet snippet = new Snippet(1L, "Test Snippet", "This is a test description", 1L);
 
         assertNotNull(snippet);
-        assertEquals("userId", snippet.getUserId());
+        assertEquals(1L, snippet.getUserId());
         assertEquals("Test Snippet", snippet.getTitle());
         assertEquals("This is a test description", snippet.getDescription());
         assertEquals(1, snippet.getLanguageId());

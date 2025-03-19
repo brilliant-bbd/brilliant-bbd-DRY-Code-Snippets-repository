@@ -38,16 +38,22 @@ public class SnippetService {
     }
 
     public List<SnippetDTO> getAllSnippets(Optional<String> tag, Optional<String> language) {
-        String tags = tag.orElse(null);
-        String programmingLanguage = language.orElse(null);
-        List<String> tagList = Arrays.asList(tags.split(";"));
-        if (tags.isEmpty() && programmingLanguage.isEmpty()) {
+        String tags;
+        String programmingLanguage;
+        List<String> tagList;
+        if (tag.isEmpty() && language.isEmpty()) {
             return snippetRepository.findSnippetsWithNullTagsAndNullLanguage();
-        } else if (tags.isEmpty() && !programmingLanguage.isEmpty()) {
+        } else if (tag.isEmpty() && !language.isEmpty()) {
+            programmingLanguage = language.orElse(null);
             return snippetRepository.findSnippetsWithNullTagsAndLanguage(programmingLanguage);
-        } else if (!tags.isEmpty() && programmingLanguage.isEmpty()) {
+        } else if (!tag.isEmpty() && language.isEmpty()) {
+            tags = tag.orElse(null);
+            tagList = Arrays.asList(tags.split(";"));
             return snippetRepository.findSnippetsWithTagsAndLanguageAndNullLanguage(tagList);
         } else {
+            tags = tag.orElse(null);
+            programmingLanguage = language.orElse(null);
+            tagList = Arrays.asList(tags.split(";"));
             return snippetRepository.findSnippetsWithTagsAndLanguage(programmingLanguage, tagList);
         }
     }
@@ -88,32 +94,24 @@ public class SnippetService {
     @Transactional
     public Snippet updateSnippet(Long snippetId, String newCode) {
         try {
-            // Find the snippet by ID
             Snippet existingSnippet = snippetRepository.findById(snippetId)
                     .orElseThrow(() -> new IllegalArgumentException("Snippet not found with ID: " + snippetId));
 
-            // Verify current user owns the snippet
             User user = userRepository.findByUserGuid(userService.getClaim())
                     .orElseThrow(() -> new IllegalStateException("User not found"));
 
-            // Determine if user owns the snippet
             if (!existingSnippet.getUserId().equals(user.getUserId())) {
                 throw new IllegalArgumentException("You do not have permission to update this snippet");
             }
 
-            // Get latest version
             Optional<Version> latestVersion = versionRepository.findLatestVersionBySnippetId(snippetId);
 
-            // Determine the next version number
             Long nextVersionNumber = latestVersion
                     .map(version -> {
                         return version.getVersion() + 1;
                     })
                     .orElse(1L);
 
-            System.out.println("Next version number: " + nextVersionNumber);
-
-            // Create and save new version
             Version newVersion = new Version(snippetId, nextVersionNumber, newCode);
             versionRepository.save(newVersion);
 

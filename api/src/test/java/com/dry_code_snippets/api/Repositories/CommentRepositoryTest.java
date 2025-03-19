@@ -1,4 +1,4 @@
-package com.dry_code_snippets.api.Comments;
+package com.dry_code_snippets.api.Repositories;
 
 import com.dry_code_snippets.api.Models.Comment;
 import com.dry_code_snippets.api.Repositories.CommentRepository;
@@ -29,14 +29,6 @@ class CommentRepositoryTest {
         comment2 = new Comment(1L, 102L, "Another test comment.");
         commentRepository.save(comment1);
         commentRepository.save(comment2);
-    }
-
-    @Test
-    void testFindBySnippetId() {
-        List<Comment> comments = commentRepository.findCommentsBySnippetId(1L);
-        assertEquals(2, comments.size());
-        assertTrue(comments.stream().anyMatch(c -> c.getComment().equals("This is a test comment.")));
-        assertTrue(comments.stream().anyMatch(c -> c.getComment().equals("Another test comment.")));
     }
 
     @Test

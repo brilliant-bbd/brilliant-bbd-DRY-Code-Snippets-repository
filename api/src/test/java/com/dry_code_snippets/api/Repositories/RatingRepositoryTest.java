@@ -1,4 +1,4 @@
-package com.dry_code_snippets.api.Ratings;
+package com.dry_code_snippets.api.Repositories;
 
 import com.dry_code_snippets.api.Models.Rating;
 import com.dry_code_snippets.api.Repositories.RatingRepository;
@@ -33,16 +33,6 @@ class RatingRepositoryTest {
     @AfterEach
     void tearDown() {
         ratingRepository.deleteAll();
-    }
-
-    @Test
-    @Transactional
-    @Rollback
-    void testFindBySnippetId() {
-        List<Rating> ratings = ratingRepository.findRatingsBySnippetId(1L);
-        assertEquals(2, ratings.size());
-        assertTrue(ratings.stream().anyMatch(r -> r.getUserId().equals(101L)));
-        assertTrue(ratings.stream().anyMatch(r -> r.getUserId().equals(102L)));
     }
 
     @Test

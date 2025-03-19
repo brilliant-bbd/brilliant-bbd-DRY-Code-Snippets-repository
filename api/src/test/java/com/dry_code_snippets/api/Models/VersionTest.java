@@ -1,4 +1,4 @@
-package com.dry_code_snippets.api.Versions;
+package com.dry_code_snippets.api.Models;
 
 
 import com.dry_code_snippets.api.Models.Version;

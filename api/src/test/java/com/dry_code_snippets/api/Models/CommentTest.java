@@ -1,4 +1,4 @@
-package com.dry_code_snippets.api.Comments;
+package com.dry_code_snippets.api.Models;
 
 import com.dry_code_snippets.api.Models.Comment;
 import org.junit.jupiter.api.Test;
