@@ -11,10 +11,12 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .authorizeHttpRequests(auth -> auth.requestMatchers(new AntPathRequestMatcher("/"))
-                        .permitAll().anyRequest().authenticated())
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()))
-                .build();
+    return http.csrf(csrf -> csrf.disable())
+    .authorizeHttpRequests(auth -> auth
+        .requestMatchers("/api/login").permitAll()
+        .requestMatchers("/").permitAll()
+        .anyRequest().authenticated()) 
+    .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()))
+    .build();
     }
 }

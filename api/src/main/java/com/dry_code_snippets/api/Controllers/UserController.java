@@ -3,6 +3,8 @@ package com.dry_code_snippets.api.Controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,10 +20,12 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/login")
-    public ResponseEntity<Void> login() {
-        this.userService.login();
-        return ResponseEntity.noContent().build();
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody String authCode) {
+        String jwt = this.userService.login(authCode);
+        if(jwt==null){
+            return ResponseEntity.internalServerError().build();
+        }
+        return ResponseEntity.ok(jwt);
     }
-
 }

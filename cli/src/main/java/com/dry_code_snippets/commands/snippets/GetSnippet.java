@@ -1,13 +1,17 @@
 package com.dry_code_snippets.commands.snippets;
 
+import com.dry_code_snippets.models.Snippet;
 import com.dry_code_snippets.util.RequestHandler;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import picocli.CommandLine.Command;
 
 import java.net.http.HttpResponse;
+import java.util.Arrays;
 
 import static com.dry_code_snippets.util.InputHelper.singleLineInput;
-import static com.dry_code_snippets.util.OutputHelper.cliPrintError;
-import static com.dry_code_snippets.util.OutputHelper.debugPrint;
+import static com.dry_code_snippets.util.OutputHelper.*;
+import static com.dry_code_snippets.util.OutputHelper.printWrapperBottom;
 import static com.dry_code_snippets.util.RequestHandler.checkValidResponse;
 
 @Command(name = "get-snippet", description = "Displays a code snippet")
@@ -26,6 +30,18 @@ public class GetSnippet implements Runnable {
             cliPrintError("ERROR: request failed");
         } else if (checkValidResponse(response)) {
             debugPrint(response.body());
+
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                Snippet snippet = objectMapper.readValue(response.body(), Snippet.class);
+
+                printWrapperTop("SNIPPETS");
+                cliPrint(snippet.getSingleSnippet());
+                printWrapperBottom();
+            } catch (JsonProcessingException e) {
+                cliPrintError("ERROR: Problem parsing response");
+            }
+
         }
 
     }

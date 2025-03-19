@@ -35,7 +35,7 @@ public class AddComment implements Runnable {
             cliPrintError("ERROR: request failed");
         } else if (checkValidResponse(response)) {
             debugPrint(response.body());
-            if (response.statusCode() == 201) {
+            if (response.statusCode() == 200) {
                 cliPrint("Comment added successfully");
             }
         }

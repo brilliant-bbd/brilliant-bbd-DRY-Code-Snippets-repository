@@ -33,15 +33,15 @@ class CommentServiceTest {
     @InjectMocks
     private CommentService commentService;
 
-    private User mockUser;
+    private Optional<User> mockUser;
     private UUID mockUserGuid = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {
-        mockUser = new User();
-        mockUser.setUserId(1L);
+        mockUser = Optional.of(new User());
+        mockUser.get().setUserId(1L);
 
-        when(userRepository.findByUserGuid(mockUserGuid)).thenReturn(Optional.of(mockUser));
+        when(userRepository.findByUserGuid(mockUserGuid)).thenReturn(mockUser);
     }
 
     @Test
@@ -49,7 +49,7 @@ class CommentServiceTest {
         Long snippetId = 1L;
         String commentText = "This is a test comment.";
 
-        Comment mockComment = new Comment(snippetId, mockUser.getUserId(), commentText);
+        Comment mockComment = new Comment(snippetId, mockUser.get().getUserId(), commentText);
         when(commentRepository.save(any(Comment.class))).thenReturn(mockComment);
 
         try (MockedStatic<Shared> mockedStatic = mockStatic(Shared.class)) {
@@ -59,7 +59,7 @@ class CommentServiceTest {
 
             assertNotNull(savedComment);
             assertEquals(snippetId, savedComment.getSnippetId());
-            assertEquals(mockUser.getUserId(), savedComment.getUserId());
+            assertEquals(mockUser.get().getUserId(), savedComment.getUserId());
             assertEquals(commentText, savedComment.getComment());
 
             verify(userRepository, times(1)).findByUserGuid(mockUserGuid);

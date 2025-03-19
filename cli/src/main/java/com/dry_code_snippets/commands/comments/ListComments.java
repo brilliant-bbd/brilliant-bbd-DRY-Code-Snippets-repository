@@ -34,6 +34,12 @@ public class ListComments implements Runnable {
             try {
                 ObjectMapper objectMapper = new ObjectMapper();
                 Comment[] comments = objectMapper.readValue(response.body(), Comment[].class);
+
+                if (comments.length == 0) {
+                    cliPrint("There are no comments for that snippet yet");
+                    return;
+                }
+
                 printWrapperTop("COMMENTS");
                 Arrays.stream(comments).forEach(comment -> cliPrint(comment.toString()));
                 printWrapperBottom();

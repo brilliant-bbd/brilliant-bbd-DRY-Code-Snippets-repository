@@ -25,7 +25,7 @@ public class VersionRepositoryTest {
         Optional<List<Version>> versions = versionRepository.findBySnippetId(1L);
 
         assertThat(versions.get()).hasSize(2);
-        assertThat(versions.get().get(1).getVersion()).isEqualTo(2);
-        assertThat(versions.get().get(0).getVersion()).isEqualTo(1);
+        assertThat(versions.get().get(0).getVersion()).isEqualTo(1L);
+        assertThat(versions.get().get(1).getVersion()).isEqualTo(2L);
     }
 }
