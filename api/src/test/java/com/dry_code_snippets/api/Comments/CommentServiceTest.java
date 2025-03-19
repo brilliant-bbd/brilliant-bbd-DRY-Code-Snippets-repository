@@ -14,8 +14,10 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -39,7 +41,7 @@ class CommentServiceTest {
         mockUser = new User();
         mockUser.setUserId(1L);
 
-        when(userRepository.findByUserGuid(mockUserGuid)).thenReturn(mockUser);
+        when(userRepository.findByUserGuid(mockUserGuid)).thenReturn(Optional.of(mockUser));
     }
 
     @Test

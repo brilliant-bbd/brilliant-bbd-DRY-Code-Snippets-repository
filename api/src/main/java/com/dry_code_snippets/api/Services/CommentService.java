@@ -28,7 +28,7 @@ public class CommentService {
     }
 
     public Comment addComment(Long snippetId, String commentText) {
-        User user = userRepository.findByUserGuid(Shared.getClaim());
+        User user = userRepository.findByUserGuid(Shared.getClaim()).orElseThrow();
         Comment comment = new Comment(snippetId,user.getUserId(),commentText);
         return commentRepository.save(comment);
     }

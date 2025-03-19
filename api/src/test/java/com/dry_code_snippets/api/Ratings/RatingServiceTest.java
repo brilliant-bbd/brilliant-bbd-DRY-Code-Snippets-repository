@@ -14,8 +14,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,7 +44,7 @@ class RatingServiceTest {
 
     @Test
     void testAddRating() {
-        when(userRepository.findByUserGuid(Shared.getClaim())).thenReturn(user);
+        when(userRepository.findByUserGuid(Shared.getClaim())).thenReturn(Optional.of(user));
         when(ratingRepository.save(any(Rating.class))).thenReturn(rating);
 
         Rating savedRating = ratingService.addRating(1L, 5);

@@ -2,6 +2,9 @@ package com.dry_code_snippets.api.Controllers;
 
 import com.dry_code_snippets.api.Models.Comment;
 import com.dry_code_snippets.api.Services.CommentService;
+import com.dry_code_snippets.api.Services.SharedService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,18 +14,25 @@ import java.util.List;
 @RequestMapping("/api/snippets/comments")
 public class CommentController {
     private final CommentService commentService;
-
-    public CommentController(CommentService commentService) {
+    private final SharedService sharedService;
+    
+    public CommentController(CommentService commentService, SharedService sharedService) {
         this.commentService = commentService;
+        this.sharedService = sharedService;
     }
 
     @GetMapping
     public ResponseEntity<List<Comment>> getComments(@RequestParam("snippetId") Long snippetId) {
-        return ResponseEntity.ok(commentService.getCommentsBySnippetId(snippetId));
+        return sharedService.resourceExists(snippetId)?
+        ResponseEntity.ok(commentService.getCommentsBySnippetId(snippetId)):
+        ResponseEntity.notFound().build();
     }
 
-    @PostMapping
+   @PostMapping
     public ResponseEntity<Comment> addComment(@RequestParam("snippetId") Long snippetId, @RequestBody String commentText) {
-        return ResponseEntity.ok(commentService.addComment(snippetId, commentText));
+        Comment createdComment = commentService.addComment(snippetId, commentText);
+        return sharedService.resourceExists(snippetId)?
+        ResponseEntity.ok(createdComment):
+        ResponseEntity.notFound().build();
     }
 }

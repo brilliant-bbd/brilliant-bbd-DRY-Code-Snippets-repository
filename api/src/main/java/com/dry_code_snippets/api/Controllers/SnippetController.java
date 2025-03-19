@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.dry_code_snippets.DTO.SnippetDTO;
 import com.dry_code_snippets.api.Models.Snippet;
+import com.dry_code_snippets.api.Services.SharedService;
 import com.dry_code_snippets.api.Services.SnippetService;
 
 import jakarta.validation.Valid;
@@ -18,20 +19,21 @@ import java.util.Optional;
 @RequestMapping("/api/snippets")
 public class SnippetController {
     private final SnippetService snippetService;
+    private final SharedService sharedService;
 
     @Autowired
-    public SnippetController(SnippetService snippetService) {
+    public SnippetController(SnippetService snippetService, SharedService sharedService) {
         this.snippetService = snippetService;
+        this.sharedService = sharedService;
     }
 
-    // Get all snippets
     @GetMapping
-    public ResponseEntity<List<Snippet>> getAllSnippets(
-        @RequestParam(required = false) String tags, 
-        @RequestParam(required = false) String language) {
+    public ResponseEntity<List<SnippetDTO>> getAllSnippets(
+            @RequestParam(required = false) String tags,
+            @RequestParam(required = false) String language) {
 
-        List<Snippet> snippets = snippetService.getAllSnippets(tags, language);
-        
+        List<SnippetDTO> snippets = snippetService.getAllSnippets(Optional.of(tags), Optional.of(language));
+
         if (snippets.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
@@ -39,31 +41,48 @@ public class SnippetController {
         return ResponseEntity.ok(snippets);
     }
 
-    // Get a snippet by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Snippet> getSnippetById(@PathVariable("id") Long id) {
-        Optional<Snippet> snippet = snippetService.getSnippetById(id);
+    @GetMapping("/{snippetId}")
+    public ResponseEntity<SnippetDTO> getSnippetById(@PathVariable("snippetId") Long snippetId) {
+        Optional<SnippetDTO> snippet = snippetService.getSnippetById(snippetId);
         return snippet.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // Create a new snippet
     @PostMapping
     public ResponseEntity<Snippet> createSnippet(@RequestBody @Valid SnippetDTO snippet) {
         Snippet createdSnippet = snippetService.createSnippet(snippet);
         return new ResponseEntity<>(createdSnippet, HttpStatus.CREATED);
     }
 
-    // Update a snippet
     @PutMapping("/{id}")
-    public ResponseEntity<Snippet> updateSnippet(@PathVariable("id") Long id, @RequestBody SnippetDTO snippet) {
+    public ResponseEntity<Snippet> updateSnippet(@PathVariable("id") Long id, @RequestBody String snippet) {
+        boolean resourceExists = sharedService.resourceExists(id);
+        if (!resourceExists) {
+            return ResponseEntity.notFound().build();
+        }
+        boolean canUpdate = sharedService.ownsResource(id);
+        if (!canUpdate) {
+            return ResponseEntity.status(403).build();
+        }
+
         Snippet updatedSnippet = snippetService.updateSnippet(id, snippet);
         return updatedSnippet != null ? ResponseEntity.ok(updatedSnippet) : ResponseEntity.badRequest().build();
     }
 
-    // Delete a snippet
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSnippet(@PathVariable("id") Long id) {
-        snippetService.deleteSnippet(id);
-        return ResponseEntity.noContent().build();
+        boolean resourceExists = sharedService.resourceExists(id);
+        if (!resourceExists) {
+            return ResponseEntity.notFound().build();
+        }
+        boolean canDelete = sharedService.ownsResource(id);
+        if (!canDelete) {
+            return ResponseEntity.status(403).build();
+        }
+        Long deletedId = snippetService.deleteSnippet(id);
+        if (deletedId != null) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
