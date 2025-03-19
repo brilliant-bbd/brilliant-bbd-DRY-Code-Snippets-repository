@@ -111,3 +111,27 @@ variable "required_subnet_count" {
   type        = number
   default     = 2
 }
+
+variable "google_client_id" {
+  description = "Google client ID"
+  type        = string
+  default     = ""
+}
+
+variable "google_client_secret" {
+  description = "Google client secret"
+  type        = string
+  default     = ""
+}
+
+variable "google_client_url" {
+  description = "Google client URL"
+  type        = string
+  default     = "http://localhost:9090/callback"
+}
+
+variable "huggingface_api_token" {
+  description = "Huggingface API token"
+  type        = string
+  default     = ""
+}

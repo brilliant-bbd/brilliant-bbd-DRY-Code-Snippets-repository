@@ -1,8 +1,10 @@
 package com.dry_code_snippets.api.Controllers;
 
 import com.dry_code_snippets.api.Models.Version;
+import com.dry_code_snippets.api.Services.AIService;
 import com.dry_code_snippets.api.Services.SharedService;
 import com.dry_code_snippets.api.Services.VersionService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +19,7 @@ public class VersionController {
     private SharedService sharedService;
     
     @Autowired
-    public VersionController(VersionService versionService,SharedService sharedService)
+    public VersionController(VersionService versionService,SharedService sharedService, AIService aiService)
     {
         this.versionService = versionService;
         this.sharedService = sharedService;
@@ -42,10 +44,4 @@ public class VersionController {
             return ResponseEntity.notFound().build();
         }
     }
-
-    @PostMapping
-    public ResponseEntity<Version> createVersion(@RequestParam("snippetId") Long snippetId,@RequestBody String code) {
-        return ResponseEntity.ok(versionService.createVersion(snippetId,code));
-    }
-
 }

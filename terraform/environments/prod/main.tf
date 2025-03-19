@@ -70,5 +70,9 @@ module "elastic_beanstalk" {
   environment_variables = {
     APP_ENV       = var.environment
     FLYWAY_DB_URL = "jdbc:postgresql://${module.database.db_instance_endpoint}/${var.db_name}"
+    HUGGINGFACE_API_TOKEN = var.huggingface_api_token
+    GOOGLE_CLIENT_ID = var.google_client_id
+    GOOGLE_CLIENT_SECRET = var.google_client_secret
+    GOOGLE_CLIENT_URL = var.google_client_url
   }
 }
