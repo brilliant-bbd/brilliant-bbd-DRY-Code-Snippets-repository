@@ -45,7 +45,7 @@ public class VersionServiceTest {
 
     @Test
     void testGetVersionsBySnippetId_ShouldReturnVersions() {
-        when(versionRepository.findBySnippetId(1L)).thenReturn(Optional.of(List.of(version1, version2)));
+        when(versionRepository.findVersionsBySnippetId(1L)).thenReturn(Optional.of(List.of(version1, version2)));
 
         List<Version> versions = versionService.getVersionsBySnippetId(1L);
 
@@ -54,25 +54,25 @@ public class VersionServiceTest {
         assertEquals(1L, versions.get(0).getVersion());
         assertEquals(2L, versions.get(1).getVersion());
 
-        verify(versionRepository, times(1)).findBySnippetId(1L);
+        verify(versionRepository, times(1)).findVersionsBySnippetId(1L);
     }
 
     @Test
     void testGetVersionsBySnippetId_WhenNoVersionsExist_ShouldReturnEmptyList() {
-        when(versionRepository.findBySnippetId(1L)).thenReturn(Optional.empty());
+        when(versionRepository.findVersionsBySnippetId(1L)).thenReturn(Optional.empty());
 
         List<Version> versions = versionService.getVersionsBySnippetId(1L);
 
         assertNotNull(versions);
         assertTrue(versions.isEmpty());
 
-        verify(versionRepository, times(1)).findBySnippetId(1L);
+        verify(versionRepository, times(1)).findVersionsBySnippetId(1L);
     }
 
     @Test
     void testCreateVersion_WhenSnippetExists_ShouldSaveVersion() {
         when(snippetRepository.existsById(1L)).thenReturn(true);
-        when(versionRepository.findBySnippetId(1L)).thenReturn(Optional.of(List.of(version1)));
+        when(versionRepository.findVersionsBySnippetId(1L)).thenReturn(Optional.of(List.of(version1)));
         when(versionRepository.save(any(Version.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Version newVersion = versionService.createVersion(1L, "New code");
@@ -99,7 +99,7 @@ public class VersionServiceTest {
 
     @Test
     void testGetVersionBySnippetIdAndVersionId_WhenVersionExists_ShouldReturnVersion() {
-        when(versionRepository.findBySnippetId(1L)).thenReturn(Optional.of(List.of(version1, version2)));
+        when(versionRepository.findVersionsBySnippetId(1L)).thenReturn(Optional.of(List.of(version1, version2)));
 
         Version result = versionService.getVersionBySnippetIdAndVersionId(1L, 2L);
 
@@ -107,12 +107,12 @@ public class VersionServiceTest {
         assertEquals(2L, result.getVersion());
         assertEquals("Code snippet v2", result.getCode());
 
-        verify(versionRepository, times(1)).findBySnippetId(1L);
+        verify(versionRepository, times(1)).findVersionsBySnippetId(1L);
     }
 
     @Test
     void testGetVersionBySnippetIdAndVersionId_WhenVersionDoesNotExist_ShouldThrowException() {
-        when(versionRepository.findBySnippetId(1L)).thenReturn(Optional.of(List.of(version1)));
+        when(versionRepository.findVersionsBySnippetId(1L)).thenReturn(Optional.of(List.of(version1)));
 
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> {
             versionService.getVersionBySnippetIdAndVersionId(1L, 3L);
@@ -123,7 +123,7 @@ public class VersionServiceTest {
 
     @Test
     void testGetVersionBySnippetIdAndVersionId_WhenNoVersionsExist_ShouldThrowException() {
-        when(versionRepository.findBySnippetId(1L)).thenReturn(Optional.empty());
+        when(versionRepository.findVersionsBySnippetId(1L)).thenReturn(Optional.empty());
 
         NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> {
             versionService.getVersionBySnippetIdAndVersionId(1L, 1L);

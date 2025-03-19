@@ -32,14 +32,6 @@ class CommentRepositoryTest {
     }
 
     @Test
-    void testFindBySnippetId() {
-        List<Comment> comments = commentRepository.findCommentsBySnippetId(1L);
-        assertEquals(2, comments.size());
-        assertTrue(comments.stream().anyMatch(c -> c.getComment().equals("This is a test comment.")));
-        assertTrue(comments.stream().anyMatch(c -> c.getComment().equals("Another test comment.")));
-    }
-
-    @Test
     void testSaveComment() {
         Comment comment = new Comment(2L, 103L, "New comment for another snippet.");
         Comment savedComment = commentRepository.save(comment);

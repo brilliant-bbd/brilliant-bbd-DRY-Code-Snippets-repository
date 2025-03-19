@@ -51,7 +51,7 @@ class CommentServiceTest {
 
     @Test
     void testGetCommentsBySnippetId_ShouldReturnComments() {
-        when(commentRepository.findBySnippetId(1L)).thenReturn(List.of(mockComment));
+        when(commentRepository.findCommentsBySnippetId(1L)).thenReturn(List.of(mockComment));
 
         List<Comment> comments = commentService.getCommentsBySnippetId(1L);
 
@@ -59,7 +59,7 @@ class CommentServiceTest {
         assertEquals(1, comments.size());
         assertEquals("Test comment", comments.get(0).getComment());
 
-        verify(commentRepository, times(1)).findBySnippetId(1L);
+        verify(commentRepository, times(1)).findCommentsBySnippetId(1L);
     }
 
     @Test

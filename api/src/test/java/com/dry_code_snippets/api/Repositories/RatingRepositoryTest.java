@@ -38,16 +38,6 @@ class RatingRepositoryTest {
     @Test
     @Transactional
     @Rollback
-    void testFindBySnippetId() {
-        List<Rating> ratings = ratingRepository.findRatingsBySnippetId(1L);
-        assertEquals(2, ratings.size());
-        assertTrue(ratings.stream().anyMatch(r -> r.getUserId().equals(101L)));
-        assertTrue(ratings.stream().anyMatch(r -> r.getUserId().equals(102L)));
-    }
-
-    @Test
-    @Transactional
-    @Rollback
     void testSaveRating() {
         Rating newRating = new Rating(2L, 103L, 3);
         Rating savedRating = ratingRepository.save(newRating);

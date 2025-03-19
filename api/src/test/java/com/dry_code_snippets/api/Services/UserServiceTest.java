@@ -104,40 +104,4 @@ public class UserServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> userService.getClaim());
     }
-
-    // @Test
-    // void testLogin_whenUserExists_shouldNotCreateNewUser() {
-
-    //     UUID userGuid = UUID.fromString("00000000-0001-0828-5955-414980969538");
-
-    //     when(userService.getClaim()).thenReturn(userGuid);
-
-    //     User existingUser = new User(userGuid);
-    //     when(userRepository.findByUserGuid(userGuid)).thenReturn(Optional.of(existingUser));
-
-    //     actualUserService.login();
-
-    //     verify(userRepository, times(1)).findByUserGuid(userGuid);
-    //     verify(userRepository, never()).save(any(User.class));
-    // }
-
-
-    // @Test
-    // void testLogin_whenUserDoesNotExist_shouldCreateNewUser() {
-
-    //     UUID userGuid = UUID.fromString("00000000-0001-0828-5955-414980969538");
-
-    //     when(userService.getClaim()).thenReturn(userGuid);
-    //     when(getClaim()).thenReturn(userGuid);
-
-    //     when(userRepository.findByUserGuid(userGuid)).thenReturn(Optional.empty());
-
-    //     User newUser = new User(userGuid);
-    //     when(userRepository.save(any(User.class))).thenReturn(newUser);
-
-    //     actualUserService.login();
-
-    //     verify(userRepository, times(1)).findByUserGuid(userGuid);
-    //     verify(userRepository, times(1)).save(any(User.class));
-    // }
 }

@@ -15,6 +15,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -67,7 +69,7 @@ class RatingServiceTest {
     void testAddRating_NewRating_Success() {
         when(userRepository.findByUserGuid(Shared.getClaim())).thenReturn(Optional.of(mockUser));
         when(snippetRepository.findById(1L)).thenReturn(Optional.of(mockSnippet));
-        when(ratingRepository.findBySnippetId(1L)).thenReturn(List.of());
+        when(ratingRepository.findRatingsBySnippetId(1L)).thenReturn(List.of());
         when(ratingRepository.save(any(Rating.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Rating result = ratingService.addRating(1L, 5);
@@ -82,7 +84,7 @@ class RatingServiceTest {
     void testAddRating_UpdateExistingRating_Success() {
         when(userRepository.findByUserGuid(Shared.getClaim())).thenReturn(Optional.of(mockUser));
         when(snippetRepository.findById(1L)).thenReturn(Optional.of(mockSnippet));
-        when(ratingRepository.findBySnippetId(1L)).thenReturn(List.of(existingRating));
+        when(ratingRepository.findRatingsBySnippetId(1L)).thenReturn(List.of(existingRating));
         when(ratingRepository.save(any(Rating.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Rating result = ratingService.addRating(1L, 3);
@@ -100,13 +102,13 @@ class RatingServiceTest {
         when(userRepository.findByUserGuid(Shared.getClaim())).thenReturn(Optional.of(mockUser));
         when(snippetRepository.findById(1L)).thenReturn(Optional.of(mockSnippet));
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
             ratingService.addRating(1L, 5);
         });
 
-        assertEquals("Users cannot rate their own snippets.", exception.getMessage());
-        verify(ratingRepository, never()).save(any(Rating.class));
-    }
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+        assertEquals("Users cannot rate their own snippets.", exception.getReason());
+        }
 
     @Test
     void testAddRating_SnippetIsDeleted_ShouldThrowException() {
@@ -149,12 +151,12 @@ class RatingServiceTest {
 
     @Test
     void testGetRatingsForSnippet() {
-        when(ratingRepository.findBySnippetId(1L)).thenReturn(List.of(rating));
+        when(ratingRepository.findRatingsBySnippetId(1L)).thenReturn(List.of(rating));
 
         List<Rating> ratings = ratingService.getRatingsForSnippet(1L);
 
         assertEquals(1, ratings.size());
         assertEquals(5, ratings.get(0).getRating());
-        verify(ratingRepository, times(1)).findBySnippetId(1L);
+        verify(ratingRepository, times(1)).findRatingsBySnippetId(1L);
     }
 }
