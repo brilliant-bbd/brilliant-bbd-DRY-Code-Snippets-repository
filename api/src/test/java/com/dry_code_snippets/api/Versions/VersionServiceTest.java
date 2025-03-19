@@ -1,6 +1,7 @@
 package com.dry_code_snippets.api.Versions;
 
 import com.dry_code_snippets.api.Models.Version;
+import com.dry_code_snippets.api.Repositories.SnippetRepository;
 import com.dry_code_snippets.api.Repositories.VersionRepository;
 import com.dry_code_snippets.api.Services.VersionService;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -20,6 +22,9 @@ public class VersionServiceTest {
 
     @Mock
     private VersionRepository versionRepository;
+
+    @Mock
+    private SnippetRepository snippetRepository;
 
     @InjectMocks
     private VersionService versionService;
@@ -56,6 +61,8 @@ public class VersionServiceTest {
 
         when(versionRepository.findBySnippetId(1L)).thenReturn(Optional.of(List.of(version1, version2)));
         when(versionRepository.save(any(Version.class))).thenReturn(mockVersion);
+        when(snippetRepository.existsById(snippetId)).thenReturn(true);
+
 
         Version savedVersion = versionService.createVersion(snippetId, code);
 
