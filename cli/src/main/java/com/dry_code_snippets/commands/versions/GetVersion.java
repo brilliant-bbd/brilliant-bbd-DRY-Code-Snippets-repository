@@ -14,7 +14,7 @@ import static com.dry_code_snippets.util.OutputHelper.*;
 import static com.dry_code_snippets.util.RequestHandler.addQueryParam;
 import static com.dry_code_snippets.util.RequestHandler.checkValidResponse;
 
-@Command(name = "get-version", description = "Displays a version of a snippet snippet")
+@Command(name = "get-version", description = "Displays a version of a snippet")
 public class GetVersion implements Runnable {
     public void run() {
         String snippetId = singleLineInput("Enter the id of the snippet you want to view a version of", 19, false, true);

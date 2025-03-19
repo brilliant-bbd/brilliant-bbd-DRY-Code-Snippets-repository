@@ -4,77 +4,74 @@
 
 The DRY Code Snippets Repository API helps developers store, share, and retrieve reusable code snippets. By promoting the **DRY (Don't Repeat Yourself)** principle, this API saves time and effort, enhances maintainability, and encourages better code practices. Developers can easily find and contribute high-quality code snippets for common tasks, reducing code duplication across projects.
 
-## Key Features
-
-### Snippet Storage
-- Store reusable code snippets categorized by programming languages, frameworks, and functionalities (e.g., database operations, validation functions, etc.).
-- Each snippet includes a **title**, **description**, **code example**, and **tags** (e.g., `React`, `authentication`, `utility`).
-  
-### Snippet Search
-- Users can search for specific code snippets using **keywords**, **tags**, and **languages**.
-- Search filters based on **snippet type** (e.g., utility, validation, API call) allow users to find relevant code faster.
-
-### Snippet Versioning
-- Multiple versions of a snippet can be created, keeping a history of changes.
-- Allows users to compare different versions and see improvements or changes.
-
-### Sharing & Collaboration
-- Share snippets publicly with the community or privately with specific teams.
-- Option to comment on snippets for feedback, suggestions, or improvements.
-  
-### Snippet Suggestions (AI-powered)
-- Suggest snippets based on the user's project context or code already written.
-- Helps developers avoid repetitive coding by recommending reusable code.
-
-### Integration with IDEs/Editors
-- Seamlessly integrate snippets into popular IDEs or editors (e.g., VS Code, Sublime Text, JetBrains) through a plugin or extension.
-- Developers can use the DRY practices directly within their workflow.
-
-### Code Quality Check
-- Automatically checks the code for **linting** and **quality** to ensure it adheres to coding standards and follows DRY principles.
-
-### Snippet Rating & Community Voting
-- Users can rate snippets based on **quality**, **clarity**, and **utility**.
-- Snippets with the highest ratings can be featured as **"Best Practices"**.
-
 ## API Documentation
 
 This API follows RESTful principles and offers the following endpoints:
 
 ### Authentication
-- **POST /auth/login**: Log in to the platform and get an authentication token.
-- **POST /auth/signup**: Create a new user account.
+- **POST /api/login**: 
+    - Log in and get a JWT token.
 
 ### Snippet Management
-- **GET /snippets**: Retrieve a list of all code snippets with optional filters (tags, language, type).
-- **POST /snippets**: Create a new code snippet.
-- **GET /snippets/{id}**: Retrieve details of a specific snippet.
-- **PUT /snippets/{id}**: Update an existing snippet.
-- **DELETE /snippets/{id}**: Delete a snippet.
+- **GET /api/snippets?tags={tags}&language={langauge}**: 
+    - Retrieve a list of all code snippets with optional filters (tags ( ; separated), language)
+- **GET /api/snippets/{id}/explain**: 
+    - Uses AI to explain the code snippet
+- **POST /api/snippets**: 
+    - Create a new code snippet.
+    - Body: {"code":"This is code","language":"This is a language","description":"This is a description","title":"This is a title","tags":["Tag 1","Tag 2"]}
+- **GET /api/snippets/{id}**: 
+    - Retrieve details of a specific snippet.
+- **PUT /api/snippets/{id}**: 
+    - Update an existing snippet (Add a new version).
+- **DELETE /api/snippets/{id}**: 
+    - Delete a snippet.
 
 ### Snippet Versioning
-- **GET /snippets/{id}/versions**: Retrieve all versions of a specific snippet.
-- **POST /snippets/{id}/versions**: Add a new version of a snippet.
-- **GET /snippets/{id}/versions/{version_id}**: View a specific version of a snippet.
-- **PUT /snippets/{id}/versions/{version_id}**: Update a specific version of a snippet.
+- **GET /api/snippets/versions?snippetId={id}**: 
+    - Retrieve all versions of a specific snippet.
+- **GET /api/snippets/versions/byVersion?snippetId={id}&version={version}**: 
+    - View a specific version of a snippet.
 
-### Snippet Search
-- **GET /search**: Search for code snippets using keywords, tags, and language filters.
+### Comments
+- **GET /api/snippets/comments?snippetId={id}**: 
+    - Gets all comments for a specific snippet
+- **POST /api/snippets/comments?snippetId={id}**: 
+    - Add a comment to a snippet
+    - body: comment
 
-### Sharing & Collaboration
-- **POST /snippets/{id}/share**: Share a snippet with the community or specific teams.
-- **POST /snippets/{id}/comment**: Comment on a snippet for feedback or suggestions.
+### Snippet Rating
+- **GET /api/snippets/ratings?snippetId={id}**: 
+    - Gets the ratings for a snippet
+- **POST /api/snippets/ratings?snippetId={id}**: 
+     - Adds a rating to a snippet
+     - body: rating(Integer between 0 and 10)
 
-### Code Quality Check
-- **POST /snippets/{id}/check-quality**: Run a code quality check on a snippet and return linting results.
 
-### Snippet Rating & Voting
-- **POST /snippets/{id}/rate**: Rate a snippet based on quality, clarity, and utility.
 
-## Getting Started
+## CLI Documentation
 
-To get started with the DRY Code Snippets Repository API, follow these steps:
+The CLI provides an interface to interact with the api using picocli.
 
-### Prerequisites
-- **Node.js** and **npm** installed.
-- API key (for accessing and interacting with the API).
+### Authentication
+- **login**: Login with Google.
+
+### Snippet Management
+- **list-snippets**: Lists all code snippets that match the filters
+- **get-snippet**: Displays a code snippet
+- **explain-snippet**: Explains code snippet using AI
+- **add-snippet**: Adds a new code snippet
+- **delete-snippet**: Delete a snippet
+
+### Snippet Versioning
+- **list-snippet-versions**: Lists all versions of the code snippet specified by id
+- **get-version**: Displays a version of a snippet
+- **add-version**: Adds new version to a snippet
+
+### Comments
+- **list-snippet-comments**: Lists all comments of a snippet
+- **add-comment**: Comment on a code snippet
+
+### Snippet Rating
+- **get-ratings**: Lists all ratings of the snippet
+- **add-rating**: Rate a code snippet
