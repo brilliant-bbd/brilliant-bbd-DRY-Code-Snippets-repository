@@ -124,6 +124,12 @@ variable "google_client_secret" {
   default     = ""
 }
 
+variable "google_client_url" {
+  description = "Google client URL"
+  type        = string
+  default     = "http://localhost:9090/callback"
+}
+
 variable "huggingface_api_token" {
   description = "Huggingface API token"
   type        = string

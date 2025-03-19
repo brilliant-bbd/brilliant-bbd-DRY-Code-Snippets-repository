@@ -80,6 +80,7 @@ jobs:
           huggingface_api_token = "${{ secrets.HUGGINGFACE_API_TOKEN }}"
           google_client_id = "${{ secrets.GOOGLE_CLIENT_ID }}"
           google_client_secret = "${{ secrets.GOOGLE_CLIENT_SECRET }}"
+          google_client_url = "${{ secrets.GOOGLE_CLIENT_URL }}"
           EOF
           chmod 600 terraform.tfvars
 

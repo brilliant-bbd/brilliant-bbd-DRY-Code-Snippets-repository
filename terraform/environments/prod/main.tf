@@ -73,5 +73,6 @@ module "elastic_beanstalk" {
     HUGGINGFACE_API_TOKEN = var.huggingface_api_token
     GOOGLE_CLIENT_ID = var.google_client_id
     GOOGLE_CLIENT_SECRET = var.google_client_secret
+    GOOGLE_CLIENT_URL = var.google_client_url
   }
 }
