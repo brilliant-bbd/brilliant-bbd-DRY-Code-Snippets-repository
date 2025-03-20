@@ -1,6 +1,6 @@
 package com.dry_code_snippets.api.Controllers;
 
-import com.dry_code_snippets.DTO.SnippetDTO;
+import com.dry_code_snippets.api.DTO.SnippetDTO;
 import com.dry_code_snippets.api.Models.Snippet;
 import com.dry_code_snippets.api.Services.AIService;
 import com.dry_code_snippets.api.Services.SharedService;

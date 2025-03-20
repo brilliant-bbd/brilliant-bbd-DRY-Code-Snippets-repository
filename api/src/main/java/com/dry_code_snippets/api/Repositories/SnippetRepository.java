@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.dry_code_snippets.DTO.SnippetDTO;
+import com.dry_code_snippets.api.DTO.SnippetDTO;
 import com.dry_code_snippets.api.Models.Snippet;
 
 @Repository

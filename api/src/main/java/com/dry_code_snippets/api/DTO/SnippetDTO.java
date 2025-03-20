@@ -1,4 +1,4 @@
-package com.dry_code_snippets.DTO;
+package com.dry_code_snippets.api.DTO;
 
 import lombok.Getter;
 import lombok.Setter;
