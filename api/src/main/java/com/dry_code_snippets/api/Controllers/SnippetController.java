@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.dry_code_snippets.DTO.SnippetDTO;
+import com.dry_code_snippets.api.DTO.SnippetDTO;
 import com.dry_code_snippets.api.Models.Snippet;
 import com.dry_code_snippets.api.Services.AIService;
 import com.dry_code_snippets.api.Services.SharedService;

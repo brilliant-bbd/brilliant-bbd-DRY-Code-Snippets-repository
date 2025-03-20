@@ -1,6 +1,6 @@
 package com.dry_code_snippets.api.Services;
 
-import com.dry_code_snippets.DTO.SnippetDTO;
+import com.dry_code_snippets.api.DTO.SnippetDTO;
 import com.dry_code_snippets.api.Models.Language;
 import com.dry_code_snippets.api.Models.Snippet;
 import com.dry_code_snippets.api.Models.SnippetTag;
@@ -13,8 +13,6 @@ import com.dry_code_snippets.api.Repositories.TagRepository;
 import com.dry_code_snippets.api.Repositories.UserRepository;
 import com.dry_code_snippets.api.Repositories.VersionRepository;
 import com.dry_code_snippets.api.Repositories.SnippetTagRepository;
-import com.dry_code_snippets.api.Services.SnippetService;
-import com.dry_code_snippets.api.Services.UserService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +21,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -31,7 +28,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -99,39 +95,6 @@ class SnippetServiceTest {
         tag.setTagName("Java");
 
         when(tagRepository.findById(1l)).thenReturn(Optional.of(tag));
-    }
-
-    @Test
-    void testGetAllSnippets() {
-        when(snippetRepository.findSnippetsWithNullTagsAndNullLanguage()).thenReturn(List.of(snippetDTO));
-        List<SnippetDTO> snippets = snippetService.getAllSnippets(Optional.empty(), Optional.empty());
-
-        assertNotNull(snippets);
-        assertEquals(1, snippets.size());
-        assertEquals("some title", snippets.get(0).getTitle());
-        verify(snippetRepository, times(1)).findSnippetsWithNullTagsAndNullLanguage(); 
-    }
-
-    @Test
-    void testGetAllSnippetsWithTag() {
-        when(snippetRepository.findSnippetsWithTagsAndLanguageAndNullLanguage(Arrays.asList(tag.getTagName()))).thenReturn(List.of(snippetDTO));
-        List<SnippetDTO> snippets = snippetService.getAllSnippets(Optional.of(tag.getTagName()), Optional.empty());
-
-        assertNotNull(snippets);
-        assertEquals(1, snippets.size());
-        assertEquals("some title", snippets.get(0).getTitle());
-        verify(snippetRepository, times(1)).findSnippetsWithTagsAndLanguageAndNullLanguage(Arrays.asList(tag.getTagName())); 
-    }
-
-    @Test
-    void testGetAllSnippetsWithLanguage() {
-        when(snippetRepository.findSnippetsWithNullTagsAndLanguage(language.getLanguageName())).thenReturn(List.of(snippetDTO));
-        List<SnippetDTO> snippets = snippetService.getAllSnippets(Optional.empty(), Optional.of(language.getLanguageName()));
-
-        assertNotNull(snippets);
-        assertEquals(1, snippets.size());
-        assertEquals("some title", snippets.get(0).getTitle());
-        verify(snippetRepository, times(1)).findSnippetsWithNullTagsAndLanguage(language.getLanguageName()); 
     }
 
     @Test

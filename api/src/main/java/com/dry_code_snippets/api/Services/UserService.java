@@ -16,7 +16,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
-import com.dry_code_snippets.api.Models.User;
 import com.dry_code_snippets.api.Repositories.UserRepository;
 
 @Service
